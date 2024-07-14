@@ -12,7 +12,9 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class CompilerUtils {
 
     /**
@@ -96,9 +98,9 @@ public class CompilerUtils {
         try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null)) {
             Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjects(
                 entityPath);
-//            // 设置注解处理器
+            // 设置注解处理器
             Iterable<? extends Processor> processors = List.of(new MybatisFlexProcessor());
-//            // 添加 -proc:only 选项
+            // 添加 -proc:only 选项
             List<String> options = List.of("-proc:only");
             JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, null, options,
                 null, compilationUnits);
@@ -106,27 +108,35 @@ public class CompilerUtils {
             task.call();
             compilationUnits = fileManager.getJavaFileObjects(
                 javaPathList.toArray(new String[0]));
-            // 需在entity之后加载
             // 设置编译输出目录
             fileManager.setLocation(StandardLocation.CLASS_OUTPUT, List.of(new File("target/classes")));
 
             task = compiler.getTask(null, fileManager, null, null, null, compilationUnits);
             String pathStr = actModulePath + File.separator + "entity" + File.separator + "table" + File.separator;
             String filePathStr = pathStr + fileName + "EntityTableDef.java";
+            // 需在entity之后加载
             javaPathList.add(1, filePathStr);
             boolean success = task.call();
             if (success) {
                 System.out.println("Compilation and annotation processing completed successfully.");
-                String commPath = PathUtils.getUserDir() + File.separator + "com";
-                if (countFiles(new File(commPath)) <= 1) {
-                    FileUtil.clean(commPath);
-                    FileUtil.del(commPath);
+                // 指定源文件夹和目标文件夹
+                File sourceDir = new File("com");
+                File destinationDir = new File(PathUtils.getTargetGeneratedAnnotations());
+                // 确保目标文件夹存在
+                destinationDir.mkdirs();
+                // 移动源文件夹内容到目标文件夹
+                if (sourceDir.exists()) {
+                    FileUtil.move(sourceDir, destinationDir, true);
+                }
+                if (countFiles(sourceDir) <= 1) {
+                    FileUtil.clean(sourceDir);
+                    FileUtil.del(sourceDir);
                 }
             } else {
                 System.out.println("Compilation and annotation processing failed.");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("compilerEntityTableDefError", e);
         }
     }
     private static int countFiles(File directory) {

@@ -18,13 +18,20 @@ public class PathUtils {
     }
 
     public static String getModulesPath() {
-        return getUserDir() + File.separator + "src"+ File.separator + "main" + File.separator + "java" + File.separator + CoolApplication.class.getPackageName()
+        return getUserDir() + getSrcMainJava() + File.separator + CoolApplication.class.getPackageName()
             .replace(".", File.separator) + File.separator + "modules";
+    }
+
+    public static String getSrcMainJava() {
+        return File.separator + "src" + File.separator + "main" + File.separator + "java";
+    }
+    public static String getTargetGeneratedAnnotations() {
+        return "target" +  File.separator + "generated-sources" + File.separator + "annotations";
     }
 
     public static String getClassName(String filePath) {
         // 定位 "src/main/java" 在路径中的位置
-        int srcMainJavaIndex = filePath.indexOf("src" + File.separator + "main" + File.separator + "java");
+        int srcMainJavaIndex = filePath.indexOf(getSrcMainJava());
         if (srcMainJavaIndex == -1) {
             throw new IllegalArgumentException("File path does not contain 'src/main/java'");
         }
