@@ -94,7 +94,7 @@ public class CoolPluginService {
             String pathStr = pluginPath;
             if (!PathUtils.isAbsolutePath(pluginPath)) {
                 // 相对路径
-                pathStr = System.getProperty("user.dir") + "/" + pluginPath;
+                pathStr = System.getProperty("user.dir") + File.separator + pluginPath;
             }
             // 将路径字符串转换为 Path 对象
             Path path = Paths.get(pathStr);
@@ -104,7 +104,7 @@ public class CoolPluginService {
                 Files.createDirectories(path);
             }
             fileName =
-                path + "/" + System.currentTimeMillis() + "_" + file.getOriginalFilename() + ".jar";
+                path + File.separator + System.currentTimeMillis() + "_" + file.getOriginalFilename() + ".jar";
             jarFile = new File(fileName);
             file.transferTo(jarFile);
             // 加载jar

@@ -2,6 +2,7 @@ package com.cool.core.util;
 
 import cn.hutool.core.io.file.PathUtil;
 import com.cool.CoolApplication;
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -17,8 +18,21 @@ public class PathUtils {
     }
 
     public static String getModulesPath() {
-        return getUserDir() + "/src/main/java/" + CoolApplication.class.getPackageName()
-            .replace(".", "/") + "/modules";
+        return getUserDir() + File.separator + "src"+ File.separator + "main" + File.separator + "java" + File.separator + CoolApplication.class.getPackageName()
+            .replace(".", File.separator) + File.separator + "modules";
+    }
+
+    public static String getClassName(String filePath) {
+        // 定位 "src/main/java" 在路径中的位置
+        int srcMainJavaIndex = filePath.indexOf("src" + File.separator + "main" + File.separator + "java");
+        if (srcMainJavaIndex == -1) {
+            throw new IllegalArgumentException("File path does not contain 'src/main/java'");
+        }
+
+        // 提取 "src/main/java" 之后的路径
+        // 将文件分隔符替换为包分隔符
+        return filePath.substring(srcMainJavaIndex + ("src" + File.separator + "main" + File.separator + "java").length() + 1)
+            .replace(File.separator, ".").replace(".java", "");
     }
 
     /**

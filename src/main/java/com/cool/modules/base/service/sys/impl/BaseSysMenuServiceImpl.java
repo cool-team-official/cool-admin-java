@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.json.JSONObject;
+import com.cool.CoolApplication;
 import com.cool.core.base.BaseServiceImpl;
 import com.cool.core.base.ModifyEnum;
 import com.cool.core.util.CompilerUtils;
@@ -147,24 +148,25 @@ public class BaseSysMenuServiceImpl extends BaseServiceImpl<BaseSysMenuMapper, B
         String mapper = (String) params.get("mapper");
 
         String fileName = (String) params.get("fileName");
+        List<String> javaPathList = new ArrayList<>();
         String modulesPath = PathUtils.getModulesPath();
         // 创建的模块地址
         String actModulePath = CompilerUtils.createModule(modulesPath, module);
-        // 创建 controller
-        CompilerUtils.createController(actModulePath, fileName, controller);
+        // 创建顺序不能调整，类加载的时候需按这个顺序加载，否则类找不到
         // 创建 entity
         String entityPath = CompilerUtils.createEntity(actModulePath, fileName, entity);
-        // 创建 service
-        CompilerUtils.createService(actModulePath, fileName, service);
-        // 创建 serviceImpl
-        CompilerUtils.createServiceImpl(actModulePath, fileName, serviceImpl);
+        javaPathList.add(entityPath);
         // 创建 mapper
-        CompilerUtils.createMapper(actModulePath, fileName, mapper);
-        // 关闭springboot
-        System.exit(0);
+        javaPathList.add(CompilerUtils.createMapper(actModulePath, fileName, mapper));
+        // 创建 service
+        javaPathList.add(CompilerUtils.createService(actModulePath, fileName, service));
+        // 创建 serviceImpl
+        javaPathList.add(CompilerUtils.createServiceImpl(actModulePath, fileName, serviceImpl));
+        // 创建 controller
+        javaPathList.add(CompilerUtils.createController(actModulePath, fileName, controller));
         // 构建TableDef
-        // CompilerUtils.compilerEntityTableDef(entityPath);
+        CompilerUtils.compilerEntityTableDef(actModulePath, fileName, entityPath, javaPathList);
         // 重启
-        // CoolApplication.restart();
+        CoolApplication.restart(javaPathList);
     }
 }

@@ -11,13 +11,11 @@ import com.cool.core.exception.CoolPreconditions;
 import com.cool.core.file.UpLoadModeType;
 import com.cool.modules.plugin.entity.PluginInfoEntity;
 import jakarta.servlet.http.HttpServletRequest;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,16 +45,16 @@ public class LocalFileUploadStrategy implements FileUploadStrategy {
             String date = DateUtil.format(new Date(),
                     DatePattern.PURE_DATE_PATTERN);
             String relativePath =
-                    "/" + localFileProperties.getUploadPath() + "/" + date;
+                File.separator + localFileProperties.getUploadPath() + File.separator + date;
 
             FileUtil.mkdir(filePath + relativePath);
             for (MultipartFile file : files) {
                 // 保存文件
                 String fileName = StrUtil.uuid().replaceAll("-", "") + getExtensionName(
                         Objects.requireNonNull(file.getOriginalFilename()));
-                file.transferTo(new File(filePath + "/" + relativePath
-                        + "/" + fileName));
-                fileUrls.add(baseUrl + "/" + date + "/" + fileName);
+                file.transferTo(new File(filePath + File.separator + relativePath
+                        + File.separator + fileName));
+                fileUrls.add(baseUrl + File.separator + date + File.separator + fileName);
             }
             if (fileUrls.size() == 1) {
                 return fileUrls.get(0);
