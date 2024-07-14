@@ -1,0 +1,14 @@
+package com.cool.modules.[(${module})].service[(${subModule}?'.'+${subModule}:'')].impl;
+
+import com.cool.core.base.BaseServiceImpl;
+import com.cool.modules.[(${module})].entity[(${subModule}?'.'+${subModule}:'')].[(${entity})]Entity;
+import com.cool.modules.[(${module})].mapper[(${subModule}?'.'+${subModule}:'')].[(${entity})]Mapper;
+import com.cool.modules.[(${module})].service[(${subModule}?'.'+${subModule}:'')].[(${entity})]Service;
+import org.springframework.stereotype.Service;
+
+/**
+ * [(${name})]
+ */
+@Service
+public class [(${entity})]ServiceImpl extends BaseServiceImpl<[(${entity})]Mapper, [(${entity})]Entity> implements [(${entity})]Service {
+}

@@ -1,0 +1,10 @@
+package com.cool.modules.[(${module})].mapper[(${subModule}?'.'+${subModule}:'')];
+
+import com.mybatisflex.core.BaseMapper;
+import com.cool.modules.[(${module})].entity[(${subModule}?'.'+${subModule}:'')].[(${entity})]Entity;
+
+/**
+ * [(${name})]
+ */
+public interface [(${entity})]Mapper extends BaseMapper<[(${entity})]Entity> {
+}

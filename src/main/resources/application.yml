@@ -1,0 +1,134 @@
+server:
+  port: 8001
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: cool-admin-java
+  profiles:
+    active: @spring.active@
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+  #返回时间格式化
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 100MB
+  # Web设置
+  web:
+    resources:
+      add-mappings: true
+      static-locations: classpath:/static/,file:./assets/public/
+
+  # caffeine 缓存
+  cache:
+    type: caffeine
+    file: assets/cache
+
+  #redis 缓存
+  #  cache:
+  #    type: redis
+  #  data:
+  #    redis:
+  #      host: 127.0.0.1
+  #      port: 6379
+  #      database: 0
+  #      password:
+  quartz:
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: always
+    autoStartup: true
+    #相关属性配置
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: CoolScheduler
+            instanceId: AUTO
+          jobStore:
+            class: org.springframework.scheduling.quartz.LocalDataSourceJobStore
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+            tablePrefix: QRTZ_
+            isClustered: true
+            clusterCheckinInterval: 10000
+            useProperties: false
+          threadPool:
+            class: org.quartz.simpl.SimpleThreadPool
+            threadCount: 1000
+            threadPriority: 9
+            threadsInheritContextClassLoaderOfInitializingThread: true
+
+# 忽略鉴权url
+ignored:
+  urls:
+    - /
+    - /upload/**
+    - /actuator/**
+    - /download/**
+    - /static/**
+    - /app/**
+    - /favicon.ico
+    - /v3/api-docs/**
+    - /swagger
+    - /swagger-ui/**
+    - /css/*
+    - /js/*
+    - /druid/**
+    - /admin/base/open/**
+    - /admin/base/comm/eps
+    - /testPlugin/**
+# 文档
+springdoc:
+  api-docs:
+    #swagger后端请求地址
+    path: /v3/api-docs
+  swagger-ui:
+    #自定义swagger前端请求路径，输入http://127.0.0.1:端口号/swagger会自动重定向到swagger页面
+    path: /swagger
+
+mybatis-flex:
+  #多数据源
+  #  datasource:
+  #MyBatis 配置文件位置，如果有单独的 MyBatis 配置，需要将其路径配置到 configLocation 中
+  #  configuration:
+  #MyBatis Mapper 所对应的 XML 文件位置，如果在 Mapper 中有自定义的方法（XML 中有自定义的实现），需要进行该配置，指定 Mapper 所对应的 XML 文件位置
+  mapper-locations: [ "classpath*:/mapper/**/*.xml" ]
+  type-aliases-package: com.cool.modules.*.entity.*
+  global-config:
+    print-banner: false
+
+
+# Cool相关配置
+cool:
+  # 缓存名称
+  cacheName: comm
+  # 插件安装位置
+  pluginPath: assets/plugin
+  # token 相关配置
+  token:
+    # 过期时间 单位：秒 半小时
+    expire: 1800
+    # 刷新token过期时间 单位：秒 7天
+    refreshExpire: 604800
+  # 文件上传相关
+  file:
+    #上传模式
+    mode: local
+    # 本地上传配置
+    local:
+      # 文件访问地址
+      base-url: http://127.0.0.1:${server.port}/upload
+
+# AutoTable配置，根据实体类自动生成表
+auto-table:
+  show-banner: false

@@ -1,2 +1,92 @@
-# cool-admin-java
-🔥 cool-admin(java版)一个很酷的后台权限管理框架，Ai编码、流程编排、模块化、插件化、CRUD极速开发，永久开源免费，基于springboot3、typescript、vue3、vite、element-ui等构建
+
+<p align="center">
+  <a href="https://midwayjs.org/" target="blank"><img src="https://cool-show.oss-cn-shanghai.aliyuncs.com/admin/logo.png" width="200" alt="Midway Logo" /></a>
+</p>
+<p align="center">cool-admin(java版)后台权限管理系统，开源免费，Ai编码、流程编排、模块化、插件化，用于快速构建后台应用程序，详情可到<a href="https://cool-admin.com" target="_blank">官网</a> 进一步了解。
+<p align="center">
+    <a href="https://github.com/cool-team-official/cool-admin-midway/blob/master/LICENSE" target="_blank"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="GitHub license" />
+    <a href=""><img src="https://img.shields.io/github/package-json/v/cool-team-official/cool-admin-midway?style=flat-square" alt="GitHub tag"></a>
+    <img src="https://img.shields.io/github/last-commit/cool-team-official/cool-admin-midway?style=flat-square" alt="GitHub tag"></a>
+</p>
+
+## 技术栈
+
+- 后端：**`Springboot3` `Mybatis-Flex`**
+- 前端：**`Vue3` `Vite` `Element-Ui` `Typescript`**
+- 数据库：**`Mysql` `Postgresql(适配中)` `Sqlite(适配中)` `...`**
+
+## 特性
+
+Ai时代，很多老旧的框架已经无法满足现代化的开发需求，Cool-Admin开发了一系列的功能，让开发变得更简单、更快速、更高效。
+
+- **Ai编码**：通过微调大模型学习框架特有写法，实现简单功能从Api接口到前端页面的一键生成
+- **流程编排**：通过拖拽编排方式，即可实现类似像智能客服这样的功能
+- **模块化**：代码是模块化的，清晰明了，方便维护
+- **插件化**：插件化的设计，可以通过安装插件的方式扩展如：支付、短信、邮件等功能
+
+![](https://cool-show.oss-cn-shanghai.aliyuncs.com/admin/flow.png)
+
+## 地址
+
+- 官网：[https://cool-admin.com](https://cool-admin.com)
+- 文档：[https://java.cool-admin.com](https://java.cool-admin.com)
+
+## 演示
+
+[https://show.cool-admin.com](https://show.cool-admin.com)
+
+- 账户：admin
+- 密码：123456
+
+![](https://cool-show.oss-cn-shanghai.aliyuncs.com/admin/home-mini.png)
+
+#### 项目前端
+
+系统是前后端分离的，启动完成后，还需要启动前端项目，前端项目地址：
+
+[https://github.com/cool-team-official/cool-admin-vue](https://github.com/cool-team-official/cool-admin-vue)
+
+或
+
+[https://gitee.com/cool-team-official/cool-admin-vue](https://gitee.com/cool-team-official/cool-admin-vue)
+
+## 微信群
+
+<img width="260" src="https://cool-show.oss-cn-shanghai.aliyuncs.com/admin/wechat.jpeg?v=1" alt="Admin Wechat"></a>
+
+## 运行
+
+### 环境要求
+
+- Java Graalvm 17+
+- Maven 3.6+
+
+### 配置
+
+修改数据库配置，配置文件位于`src/resources/application-local.yml`
+
+以 Mysql 为例，其他数据库请参考[数据库配置文档](https://cool-js.com/admin/node/quick.html#%E6%95%B0%E6%8D%AE%E5%BA%93%E9%85%8D%E7%BD%AE)
+
+Mysql(`>=5.7版本`)，建议 8.0，首次启动会自动初始化并导入数据
+
+```yaml
+# mysql，驱动已经内置，无需安装
+spring:
+    datasource:
+        url: jdbc:mysql://127.0.0.1:3306/cool?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2b8
+        username: root
+        password: 123456
+        driver-class-name: com.mysql.cj.jdbc.Driver
+```
+
+### 启动
+
+注：项目使用到了[Mybatis-Flex 的Apt功能](https://mybatis-flex.com/zh/others/apt.html)，如果启动报错，请先执行`mvn compile`编译
+
+1、启动文件：`src/main/java/com/cool/CoolApplication.java`
+
+2、启动完成后，访问：[http://localhost:8001](http://localhost:8001)
+
+3、如果看到以下界面，说明启动成功。这时候再启动前端项目即可，数据库会自动初始化，默认账号：admin，密码：123456
+
+![](https://cool-show.oss-cn-shanghai.aliyuncs.com/admin/run.png)

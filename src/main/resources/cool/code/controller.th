@@ -1,0 +1,21 @@
+package com.cool.modules.[(${module})].controller.[(${type})][(${subModule}?'.'+${subModule}:'')];
+
+import cn.hutool.json.JSONObject;
+import com.cool.core.annotation.CoolRestController;
+import com.cool.core.base.BaseController;
+import com.cool.modules.[(${module})].entity[(${subModule}?'.'+${subModule}:'')].[(${entity})]Entity;
+import com.cool.modules.[(${module})].service[(${subModule}?'.'+${subModule}:'')].[(${entity})]Service;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+
+/**
+ * [(${name})]
+ */
+@Tag(name = "[(${name})]", description = "[(${name})]")
+@CoolRestController(api = {"add", "delete", "update", "page", "list", "info"})
+public class [(${upperType})][(${entity})]Controller extends BaseController<[(${entity})]Service, [(${entity})]Entity> {
+    @Override
+    protected void init(HttpServletRequest request, JSONObject requestParams) {
+
+    }
+}
