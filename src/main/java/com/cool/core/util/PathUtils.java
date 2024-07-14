@@ -30,7 +30,7 @@ public class PathUtils {
     }
 
     public static String getClassName(String filePath) {
-        // 定位 "src/main/java" 在路径中的位置
+        // 定位 "/src/main/java" 在路径中的位置
         int srcMainJavaIndex = filePath.indexOf(getSrcMainJava());
         if (srcMainJavaIndex == -1) {
             throw new IllegalArgumentException("File path does not contain 'src/main/java'");
@@ -38,7 +38,7 @@ public class PathUtils {
 
         // 提取 "src/main/java" 之后的路径
         // 将文件分隔符替换为包分隔符
-        return filePath.substring(srcMainJavaIndex + ("src" + File.separator + "main" + File.separator + "java").length() + 1)
+        return filePath.substring(srcMainJavaIndex + ("src" + File.separator + "main" + File.separator + "java").length() + 2)
             .replace(File.separator, ".").replace(".java", "");
     }
 
