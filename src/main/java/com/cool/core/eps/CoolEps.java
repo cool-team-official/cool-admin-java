@@ -275,11 +275,9 @@ public class CoolEps {
      */
     private String getEntity(Class<?> controller) {
         try {
-            Type type = ((ParameterizedType) SpringUtil.getBean(controller).getClass()
-                    .getGenericSuperclass())
-                    .getActualTypeArguments()[1];
-            String[] names = type.getTypeName().split("[.]");
-            return names[names.length - 1];
+            ParameterizedType parameterizedType = (ParameterizedType) controller.getGenericSuperclass();
+            Class<?> entityClass = (Class<?>) parameterizedType.getActualTypeArguments()[1];
+            return entityClass.getSimpleName();
         } catch (Exception e) {
             return "";
         }
