@@ -7,6 +7,7 @@ import cn.hutool.json.JSONObject;
 import com.cool.CoolApplication;
 import com.cool.core.base.BaseServiceImpl;
 import com.cool.core.base.ModifyEnum;
+import com.cool.core.eps.CoolEps;
 import com.cool.core.util.CompilerUtils;
 import com.cool.core.util.PathUtils;
 import com.cool.modules.base.entity.sys.BaseSysMenuEntity;
@@ -33,6 +34,8 @@ public class BaseSysMenuServiceImpl extends BaseServiceImpl<BaseSysMenuMapper, B
     final private BaseSysPermsService baseSysPermsService;
 
     final private CoolSecurityUtil coolSecurityUtil;
+
+    final private CoolEps coolEps;
 
     @Override
     public Object list(JSONObject requestParams, QueryWrapper queryWrapper) {
@@ -140,6 +143,7 @@ public class BaseSysMenuServiceImpl extends BaseServiceImpl<BaseSysMenuMapper, B
 
     @Override
     public void create(Map<String, Object> params) {
+        coolEps.clear();
         String module = (String) params.get("module");
         String controller = (String) params.get("controller");
         String entity = (String) params.get("entity");

@@ -81,6 +81,14 @@ public class CoolEps {
     }
 
     /**
+     * 清空所有的数据
+     */
+    public void clear() {
+        admin = Dict.create();
+        app = Dict.create();
+    }
+
+    /**
      * 构建所有的url
      */
     private void urls() {
