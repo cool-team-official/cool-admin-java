@@ -118,4 +118,21 @@ public interface BaseService<T> extends IService<T> {
      * @param type          修改类型
      */
     void modifyAfter(JSONObject requestParams, T t, ModifyEnum type);
+
+    /**
+     * 修改之前
+     *
+     * @param requestParams 请求参数
+     * @param t             对应实体
+     */
+    void modifyBefore(JSONObject requestParams, T t);
+
+    /**
+     * 修改之前
+     *
+     * @param requestParams 请求参数
+     * @param t             对应实体
+     * @param type          修改类型
+     */
+    void modifyBefore(JSONObject requestParams, T t, ModifyEnum type);
 }
