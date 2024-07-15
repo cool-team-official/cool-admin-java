@@ -65,7 +65,7 @@ Ai时代，很多老旧的框架已经无法满足现代化的开发需求，Coo
 
 修改数据库配置，配置文件位于`src/resources/application-local.yml`
 
-以 Mysql 为例，其他数据库请参考[数据库配置文档](https://cool-js.com/admin/node/quick.html#%E6%95%B0%E6%8D%AE%E5%BA%93%E9%85%8D%E7%BD%AE)
+以 Mysql 为例，其他数据库适配中...
 
 Mysql(`>=5.7版本`)，建议 8.0，首次启动会自动初始化并导入数据
 
