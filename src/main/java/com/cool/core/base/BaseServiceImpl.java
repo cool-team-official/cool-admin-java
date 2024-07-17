@@ -21,7 +21,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity<T>> e
 
     @Override
     public Long add(T entity) {
-        mapper.insert(entity);
+        mapper.insertSelective(entity);
         return entity.getId();
     }
 
