@@ -83,7 +83,7 @@ public class BaseSysUserServiceImpl extends BaseServiceImpl<BaseSysUserMapper, B
             !coolSecurityUtil.username().equals("admin")));
 
         qw.groupBy(BASE_SYS_USER_ENTITY.ID);
-        return mapper.paginateWithRelations(page, qw);
+        return mapper.paginate(page, qw);
     }
 
     @Override

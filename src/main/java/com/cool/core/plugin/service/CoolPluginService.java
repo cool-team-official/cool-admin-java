@@ -18,6 +18,7 @@ import com.cool.modules.plugin.entity.PluginInfoEntity;
 import com.cool.modules.plugin.service.PluginInfoService;
 import com.mybatisflex.core.query.QueryWrapper;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -87,32 +89,22 @@ public class CoolPluginService {
      * 安装jar
      */
     public void install(MultipartFile file, boolean force) {
-        String fileName;
         File jarFile = null;
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
         try {
-            String pathStr = pluginPath;
-            if (!PathUtils.isAbsolutePath(pluginPath)) {
-                // 相对路径
-                pathStr = System.getProperty("user.dir") + File.separator + pluginPath;
-            }
-            // 将路径字符串转换为 Path 对象
-            Path path = Paths.get(pathStr);
-            // 检查路径是否存在
-            if (!Files.exists(path)) {
-                // 如果路径不存在，则创建目录（包括父目录）
-                Files.createDirectories(path);
-            }
-            fileName =
-                path + File.separator + System.currentTimeMillis() + "_" + file.getOriginalFilename() + ".jar";
-            jarFile = new File(fileName);
-            file.transferTo(jarFile);
+            // 保存jar文件
+            jarFile = saveJarFile(file);
+            String jarFilePath = jarFile.getAbsolutePath();
             // 加载jar
-            PluginJson pluginJson = dynamicJarLoaderService.install(fileName, force);
+            PluginJson pluginJson = dynamicJarLoaderService.install(jarFilePath, force);
             // 保存插件信息入库
-            savePluginInfo(pluginJson, fileName, jarFile, force);
+            savePluginInfo(pluginJson, jarFilePath, jarFile, force);
             // 把 ApplicationContext 对象传递打插件类中，使其在插件中也能正常使用spring bean对象
             CoolPluginInvokers.setApplicationContext(pluginJson.getKey());
+        } catch (PersistenceException persistenceException) {
+            // 唯一键冲突
+            CoolPreconditions.returnData(
+                new CoolPreconditions.ReturnData(1, "插件已存在，继续安装将覆盖"));
         } catch (CoolException e) {
             FileUtil.del(jarFile);
             throw e;
@@ -122,6 +114,29 @@ public class CoolPluginService {
         } finally {
             Thread.currentThread().setContextClassLoader(originalClassLoader);
         }
+    }
+
+    /**
+     * 保存jar文件
+     */
+    private File saveJarFile(MultipartFile file) throws IOException {
+        String pathStr = pluginPath;
+        if (!PathUtils.isAbsolutePath(pluginPath)) {
+            // 相对路径
+            pathStr = System.getProperty("user.dir") + File.separator + pluginPath;
+        }
+        // 将路径字符串转换为 Path 对象
+        Path path = Paths.get(pathStr);
+        // 检查路径是否存在
+        if (!Files.exists(path)) {
+            // 如果路径不存在，则创建目录（包括父目录）
+            Files.createDirectories(path);
+        }
+        String jarFilePath =
+            path + File.separator + System.currentTimeMillis() + "_" + file.getOriginalFilename() + ".jar";
+        File jarFile = new File(jarFilePath);
+        file.transferTo(jarFile);
+        return jarFile;
     }
 
     /**
@@ -141,12 +156,76 @@ public class CoolPluginService {
     /**
      * 保存插件信息
      */
-    private void savePluginInfo(PluginJson pluginJson, String fileName, File jarFile,
+    private void savePluginInfo(PluginJson pluginJson, String jarFilePath, File jarFile,
         boolean force) {
         CoolPreconditions.checkEmpty(pluginJson, "插件安装失败");
-        pluginJson.setJarPath(fileName);
+        pluginJson.setJarPath(jarFilePath);
         PluginInfoEntity pluginInfo = new PluginInfoEntity();
         BeanUtil.copyProperties(pluginJson, pluginInfo);
+        setLogoOrReadme(pluginJson, pluginInfo);
+        pluginInfo.setKey(pluginJson.getKey());
+        pluginInfo.setPluginJson(pluginJson);
+        // 转二进制
+        pluginInfo.setJarFile(FileUtil.readBytes(jarFile));
+        if (force) {
+            // 判断是否有同名插件， 有将其关闭
+            closeSameNamePlugin(pluginJson);
+            // 覆盖插件
+            coverPlugin(pluginJson, pluginInfo);
+            return;
+        }
+        pluginInfo.save();
+    }
+
+    /**
+     * 覆盖插件
+     */
+    private void coverPlugin(PluginJson pluginJson, PluginInfoEntity pluginInfo) {
+        // 通过key 找到id
+        PluginInfoEntity one = pluginInfoService.getByKeyNoJarFile(pluginJson.getKey());
+        if (ObjUtil.isNotEmpty(one)) {
+            // 重新加载配置不更新
+            pluginInfo.setConfig(one.getConfig());
+            pluginInfo.getPluginJson().setConfig(one.getConfig());
+            CopyOptions options = CopyOptions.create().setIgnoreNullValue(true);
+            BeanUtil.copyProperties(pluginInfo, one, options);
+            // 忽略为更新的字段
+            ignoreNoChange(pluginInfo, one);
+            one.updateById();
+        }
+    }
+
+    /**
+     * 关闭同名插件
+     */
+    private void closeSameNamePlugin(PluginJson pluginJson) {
+        if (ObjUtil.isNotEmpty(pluginJson.getSameHookId())) {
+            // 存在同名，已强制安装，需将原插件关闭
+            PluginInfoEntity sameHookPlugin = new PluginInfoEntity();
+            sameHookPlugin.setStatus(0);
+            sameHookPlugin.setId(pluginJson.getSameHookId());
+            updatePlugin(sameHookPlugin);
+        }
+    }
+
+    /**
+     * 忽略为更新的字段
+     */
+    private static void ignoreNoChange(PluginInfoEntity pluginInfo, PluginInfoEntity one) {
+        if (ObjUtil.equals(pluginInfo.getLogo(), one.getLogo())) {
+            // 头像没变，不更新
+            one.setLogo(null);
+        }
+        if (ObjUtil.equals(pluginInfo.getReadme(), one.getReadme())) {
+            // readme没变，不更新
+            one.setReadme(null);
+        }
+    }
+
+    /**
+     * 设置logo或readme
+     */
+    private void setLogoOrReadme(PluginJson pluginJson, PluginInfoEntity pluginInfo) {
         if (ObjUtil.isNotEmpty(pluginJson.getLogo())) {
             DynamicJarClassLoader dynamicJarClassLoader = dynamicJarLoaderService
                 .getDynamicJarClassLoader(pluginJson.getKey());
@@ -165,34 +244,6 @@ public class CoolPluginService {
                 pluginInfo.setReadme(StrUtil.str(IoUtil.readBytes(inputStream), "UTF-8"));
             }
         }
-        pluginInfo.setKey(pluginJson.getKey());
-        pluginInfo.setPluginJson(pluginJson);
-        // 转二进制
-        pluginInfo.setJarFile(FileUtil.readBytes(jarFile));
-
-        if (force) {
-            CopyOptions options = CopyOptions.create().setIgnoreNullValue(true);
-            if (ObjUtil.isNotEmpty(pluginJson.getSameHookId())) {
-                // 存在同名，已强制安装，需将原插件关闭
-                PluginInfoEntity sameHookPlugin = new PluginInfoEntity();
-                sameHookPlugin.setStatus(0);
-                sameHookPlugin.setId(pluginJson.getSameHookId());
-                updatePlugin(sameHookPlugin);
-            }
-            // 通过key 找到id
-            PluginInfoEntity one = pluginInfoService.getByKeyNoJarFile(pluginJson.getKey());
-            if (ObjUtil.isNotEmpty(one)) {
-                // 重新加载配置不更新
-                pluginInfo.setConfig(one.getConfig());
-                pluginInfo.getPluginJson().setConfig(one.getConfig());
-                BeanUtil.copyProperties(pluginInfo, one, options);
-                one.updateById();
-                // 重新安装了调用设置插件历史配置信息
-                CoolPluginInvokers.setPluginJson(pluginJson.getKey(), one);
-                return;
-            }
-        }
-        pluginInfo.save();
     }
 
     public void updatePlugin(PluginInfoEntity entity) {
