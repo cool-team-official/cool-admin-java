@@ -249,17 +249,20 @@ public class CoolPluginService {
     public void updatePlugin(PluginInfoEntity entity) {
         PluginInfoEntity dbPluginInfoEntity = pluginInfoService.getPluginInfoEntityByIdNoJarFile(
             entity.getId());
-        boolean updateConfig = false;
+        // 调用插件更新配置标识
+        boolean invokePluginConfig = false;
         if (!MapExtUtil.compareMaps(entity.getConfig(), dbPluginInfoEntity.getConfig())) {
             // 不一致，说明更新了配置
+            entity.setPluginJson(dbPluginInfoEntity.getPluginJson());
             entity.getPluginJson().setConfig(entity.getConfig());
-            updateConfig = true;
+            // 更新了配置， 且插件是开启状态
+            invokePluginConfig = ObjUtil.equals(dbPluginInfoEntity.getStatus(), 1);
         }
         if (!ObjUtil.equals(entity.getStatus(), dbPluginInfoEntity.getStatus())) {
             // 更新状态
             updateStatus(entity, dbPluginInfoEntity);
         }
-        if (updateConfig) {
+        if (invokePluginConfig) {
             // 更新配置
             CoolPluginInvokers.setPluginJson(dbPluginInfoEntity.getKey(), entity);
         }

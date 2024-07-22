@@ -5,6 +5,7 @@ import com.cool.core.config.PluginJson;
 import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Table;
 import com.mybatisflex.core.handler.Fastjson2TypeHandler;
+import com.mybatisflex.core.handler.JacksonTypeHandler;
 import com.tangzc.autotable.annotation.Ignore;
 import com.tangzc.autotable.annotation.Index;
 import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
@@ -55,7 +56,7 @@ public class PluginInfoEntity extends BaseEntity<PluginInfoEntity> {
     private byte[] jarFile;
 
     @ColumnDefine(comment = "配置", type = "json")
-    @Column(typeHandler = Fastjson2TypeHandler.class)
+    @Column(typeHandler = JacksonTypeHandler.class)
     private Map<String, Object> config;
 
     @Ignore
