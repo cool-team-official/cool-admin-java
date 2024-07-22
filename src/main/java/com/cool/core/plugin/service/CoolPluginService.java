@@ -188,9 +188,9 @@ public class CoolPluginService {
             pluginInfo.setConfig(one.getConfig());
             pluginInfo.getPluginJson().setConfig(one.getConfig());
             CopyOptions options = CopyOptions.create().setIgnoreNullValue(true);
-            BeanUtil.copyProperties(pluginInfo, one, options);
-            // 忽略为更新的字段
+            // 忽略无变更，无需更新的字段
             ignoreNoChange(pluginInfo, one);
+            BeanUtil.copyProperties(pluginInfo, one, options);
             one.updateById();
         }
     }
@@ -209,16 +209,16 @@ public class CoolPluginService {
     }
 
     /**
-     * 忽略为更新的字段
+     * 忽略无变更，无需更新的字段
      */
     private static void ignoreNoChange(PluginInfoEntity pluginInfo, PluginInfoEntity one) {
         if (ObjUtil.equals(pluginInfo.getLogo(), one.getLogo())) {
-            // 头像没变，不更新
-            one.setLogo(null);
+            // 头像没变，无需更新
+            pluginInfo.setLogo(null);
         }
         if (ObjUtil.equals(pluginInfo.getReadme(), one.getReadme())) {
-            // readme没变，不更新
-            one.setReadme(null);
+            // readme没变，无需更新
+            pluginInfo.setReadme(null);
         }
     }
 
@@ -257,11 +257,11 @@ public class CoolPluginService {
         }
         if (!ObjUtil.equals(entity.getStatus(), dbPluginInfoEntity.getStatus())) {
             // 更新状态
-            updateConfig = updateStatus(entity, dbPluginInfoEntity, updateConfig);
+            updateStatus(entity, dbPluginInfoEntity);
         }
         if (updateConfig) {
             // 更新配置
-            CoolPluginInvokers.setPluginJson(getKeyById(entity.getId()), entity);
+            CoolPluginInvokers.setPluginJson(dbPluginInfoEntity.getKey(), entity);
         }
         pluginInfoService.update(entity);
     }
@@ -269,8 +269,7 @@ public class CoolPluginService {
     /**
      * 更新插件状态
      */
-    private boolean updateStatus(PluginInfoEntity entity, PluginInfoEntity dbPluginInfoEntity,
-        boolean updateConfig) {
+    private void updateStatus(PluginInfoEntity entity, PluginInfoEntity dbPluginInfoEntity) {
         // 更新状态
         Integer status = entity.getStatus();
         if (ObjUtil.equals(status, 1)) {
@@ -287,14 +286,12 @@ public class CoolPluginService {
                         hookPlugin.getName());
                 }
             }
-            // 充关闭置为开启，触发重新加载jar
+            // 从关闭置为开启，触发重新加载jar
             initInstall(dbPluginInfoEntity);
-            updateConfig = false;
         } else if (ObjUtil.equals(status, 0)) {
             // 插件关闭 卸载jar
             dynamicJarLoaderService.uninstall(dbPluginInfoEntity.getKey());
         }
-        return updateConfig;
     }
 
     /**
@@ -302,17 +299,6 @@ public class CoolPluginService {
      */
     public PluginInfoEntity getPluginInfoEntityByHook(String hook) {
         return pluginInfoService.getPluginInfoEntityByHookNoJarFile(hook);
-    }
-
-    /**
-     * 通过id 获取key
-     */
-    private String getKeyById(Long id) {
-        PluginInfoEntity one = pluginInfoService.getPluginInfoEntityByIdNoJarFile(id);
-        if (ObjUtil.isNotEmpty(one)) {
-            return one.getKey();
-        }
-        return null;
     }
 
     /**

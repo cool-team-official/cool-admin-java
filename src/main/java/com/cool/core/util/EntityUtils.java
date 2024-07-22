@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjUtil;
 import com.mybatisflex.annotation.Table;
 import com.mybatisflex.core.query.QueryColumn;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,8 +73,9 @@ public class EntityUtils {
 
     public static List<QueryColumn> getFieldNamesListWithSuperClass(QueryColumn[] queryColumns,
         String... excludeNames) {
+        ArrayList<String> excludeList = new ArrayList<>(List.of(excludeNames));
         return Arrays.stream(queryColumns).toList().stream()
-            .filter(o -> ObjUtil.equals(o.getName(), excludeNames)).toList();
+            .filter(o -> !excludeList.contains(o.getName())).toList();
     }
 
     /**
