@@ -85,8 +85,7 @@ ignored:
     - /js/*
     - /druid/**
     - /admin/base/open/**
-    - /admin/base/comm/eps
-    - /testPlugin/**
+
 # 文档
 springdoc:
   api-docs:

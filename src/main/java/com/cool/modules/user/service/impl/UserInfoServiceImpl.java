@@ -10,4 +10,10 @@ import org.springframework.stereotype.Service;
 public class UserInfoServiceImpl extends BaseServiceImpl<UserInfoMapper, UserInfoEntity> implements
     UserInfoService {
 
+    @Override
+    public Object person(Long userId) {
+        UserInfoEntity info = mapper.selectOneById(userId);
+        info.setPassword(null);
+        return info;
+    }
 }

@@ -121,4 +121,15 @@ public class JwtTokenUtil implements Serializable {
         boolean isValidSignature = JWTUtil.verify(token, secret.getBytes());
         return (tokenUsername.equals(username) && !isTokenExpired(token) && isValidSignature);
     }
+
+    /**
+     * 校验token是否有效
+     * @param token
+     * @return
+     */
+    public Boolean validateToken(String token) {
+        String secret = getSecret();
+        boolean isValidSignature = JWTUtil.verify(token, secret.getBytes());
+        return (!isTokenExpired(token) && isValidSignature);
+    }
 }
