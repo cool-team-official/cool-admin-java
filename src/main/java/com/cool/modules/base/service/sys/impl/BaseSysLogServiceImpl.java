@@ -19,6 +19,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Date;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +36,9 @@ public class BaseSysLogServiceImpl extends BaseServiceImpl<BaseSysLogMapper, Bas
 	private final CoolSecurityUtil coolSecurityUtil;
 
 	private final IPUtils ipUtils;
+
+	@Value("${cool.log.maxJsonLength:1024}")
+	private int maxJsonLength;
 
 	@Override
 	public Object page(
@@ -76,7 +80,10 @@ public class BaseSysLogServiceImpl extends BaseServiceImpl<BaseSysLogMapper, Bas
 		newJSONObject.remove("tokenInfo");
 		newJSONObject.remove("refreshToken");
 		newJSONObject.remove("body");
-
+		if (newJSONObject.toString().getBytes().length > maxJsonLength) {
+			// 超过指定
+			newJSONObject.clear();
+		}
 		recordAsync(requestURI, ipAddr, userId, newJSONObject);
 	}
 

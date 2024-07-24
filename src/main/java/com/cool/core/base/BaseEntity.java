@@ -1,5 +1,6 @@
 package com.cool.core.base;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
@@ -20,17 +21,18 @@ import lombok.Setter;
 public abstract class BaseEntity<T extends Model<T>> extends Model<T> implements Serializable {
 
     @Id(keyType = KeyType.Auto, comment = "ID")
-    private Long id;
+    protected Long id;
 
     @Column(onInsertValue = "now()")
     @ColumnDefine(comment = "创建时间")
-    private Date createTime;
+    protected Date createTime;
 
     @Column(onInsertValue = "now()", onUpdateValue = "now()")
     @ColumnDefine(comment = "更新时间")
-    private Date updateTime;
+    protected Date updateTime;
 
     @Ignore
     @Column(ignore = true)
+    @JsonIgnore
     private QueryWrapper queryWrapper;
 }

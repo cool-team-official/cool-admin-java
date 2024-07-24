@@ -184,6 +184,7 @@ public class CoolPluginService {
         // 通过key 找到id
         PluginInfoEntity one = pluginInfoService.getByKeyNoJarFile(pluginJson.getKey());
         if (ObjUtil.isNotEmpty(one)) {
+            String oldJarPath = one.getPluginJson().getJarPath();
             // 重新加载配置不更新
             pluginInfo.setConfig(one.getConfig());
             pluginInfo.getPluginJson().setConfig(one.getConfig());
@@ -191,7 +192,10 @@ public class CoolPluginService {
             // 忽略无变更，无需更新的字段
             ignoreNoChange(pluginInfo, one);
             BeanUtil.copyProperties(pluginInfo, one, options);
-            one.updateById();
+            if (one.updateById()) {
+                // 覆盖时删除旧版本插件
+                FileUtil.del(oldJarPath);
+            }
         }
     }
 
