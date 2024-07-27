@@ -188,6 +188,8 @@ public class CoolPluginService {
             // 重新加载配置不更新
             pluginInfo.setConfig(one.getConfig());
             pluginInfo.getPluginJson().setConfig(one.getConfig());
+            // 设置插件配置
+            CoolPluginInvokers.setPluginJson(pluginInfo.getKey(), pluginInfo);
             CopyOptions options = CopyOptions.create().setIgnoreNullValue(true);
             // 忽略无变更，无需更新的字段
             ignoreNoChange(pluginInfo, one);
