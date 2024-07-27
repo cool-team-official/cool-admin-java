@@ -9,6 +9,7 @@ import com.cool.core.config.PluginJson;
 import com.cool.core.exception.CoolPreconditions;
 import com.cool.core.plugin.config.DynamicJarClassLoader;
 import com.cool.core.util.AnnotationUtils;
+import com.cool.core.util.CompilerUtils;
 import com.cool.modules.plugin.entity.PluginInfoEntity;
 import com.cool.modules.plugin.service.PluginInfoService;
 import java.io.File;
@@ -74,19 +75,7 @@ public class DynamicJarLoaderService {
         try (JarFile jarFile = ((JarURLConnection) jarUrl.openConnection()).getJarFile()) {
             Enumeration<JarEntry> entries = jarFile.entries();
             while (entries.hasMoreElements()) {
-                JarEntry jarEntry = entries.nextElement();
-                if (jarEntry.getName().endsWith(".class")) {
-                    String className = jarEntry.getName().replace('/', '.').substring(0,
-                        jarEntry.getName().length() - 6);
-                    try {
-                        // 加载类
-                        Class<?> clazz = dynamicJarClassLoader.loadClass(className);
-                        if (AnnotationUtils.hasCoolPluginAnnotation(clazz)) {
-                            plugins.add(clazz);
-                        }
-                    } catch (NoClassDefFoundError ignored) {
-                    }
-                }
+                loadClass(entries, dynamicJarClassLoader, plugins);
             }
         }
 
@@ -97,6 +86,38 @@ public class DynamicJarLoaderService {
 
         log.info("插件{}初始化成功.", pluginJson.getKey());
         return pluginJson;
+    }
+
+    /**
+     * 加载class
+     */
+    private static void loadClass(Enumeration<JarEntry> entries,
+        DynamicJarClassLoader dynamicJarClassLoader, List<Class<?>> plugins)
+        throws ClassNotFoundException {
+        JarEntry jarEntry = entries.nextElement();
+
+        String entryName = jarEntry.getName();
+        if (!entryName.endsWith(".class")) {
+            return;
+        }
+        String className = entryName.replace('/', '.').substring(0, entryName.length() - 6);
+        if (entryName.startsWith(CompilerUtils.META_INF_VERSIONS)) {
+            // 处理多版本类
+            String jdkVersion = CompilerUtils.getJdkVersion();
+            if (!entryName.startsWith(CompilerUtils.META_INF_VERSIONS + jdkVersion)) {
+                return;
+            }
+            // 替换版本目录
+            className = className.replace((CompilerUtils.META_INF_VERSIONS + jdkVersion).replace("/", ".") + ".", "");
+        }
+        try {
+            // 加载类
+            Class<?> clazz = dynamicJarClassLoader.loadClass(className);
+            if (AnnotationUtils.hasCoolPluginAnnotation(clazz)) {
+                plugins.add(clazz);
+            }
+        } catch (NoClassDefFoundError | UnsupportedClassVersionError ignored) {
+        }
     }
 
     /**

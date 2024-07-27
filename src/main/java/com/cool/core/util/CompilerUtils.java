@@ -4,6 +4,8 @@ import cn.hutool.core.io.FileUtil;
 import com.mybatisflex.processor.MybatisFlexProcessor;
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import javax.annotation.processing.Processor;
@@ -16,6 +18,22 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class CompilerUtils {
+
+    public final static String META_INF_VERSIONS = "META-INF/versions/";
+
+    // jdk版本
+    private static String JVM_VERSION = null;
+
+    /**
+     * 获取jdk版本
+     */
+    public static String getJdkVersion() {
+        if (JVM_VERSION == null) {
+            RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+            JVM_VERSION = runtimeMXBean.getSpecVersion();
+        }
+        return JVM_VERSION;
+    }
 
     /**
      * 创建文件, 先删除在创建
