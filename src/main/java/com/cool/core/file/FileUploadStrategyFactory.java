@@ -2,7 +2,6 @@ package com.cool.core.file;
 
 import static com.cool.core.plugin.consts.PluginConsts.uploadHook;
 
-import cn.hutool.core.lang.Dict;
 import cn.hutool.core.util.ObjUtil;
 import com.cool.core.exception.CoolPreconditions;
 import com.cool.core.file.strategy.FileUploadStrategy;
@@ -25,16 +24,11 @@ public class FileUploadStrategyFactory {
 
 	final private CoolPluginService coolPluginService;
 
-	public FileUploadStrategy getStrategy() {
-		PluginInfoEntity pluginInfoEntity = coolPluginService.getPluginInfoEntityByHook(uploadHook);
-		return getStrategy(pluginInfoEntity);
-	}
-
 	private FileUploadStrategy getStrategy(PluginInfoEntity pluginInfoEntity) {
 		if (ObjUtil.isEmpty(pluginInfoEntity)) {
 			return applicationContext.getBean("localFileUploadStrategy", FileUploadStrategy.class);
 		}
-		return applicationContext.getBean("ossFileUploadStrategy", FileUploadStrategy.class);
+		return applicationContext.getBean("cloudFileUploadStrategy", FileUploadStrategy.class);
 	}
 
 	public Object upload(MultipartFile[] files, HttpServletRequest request) {
@@ -49,9 +43,11 @@ public class FileUploadStrategyFactory {
 	}
 
 	public Object getMode() {
-		FileUploadStrategy strategy = getStrategy();
-		UpLoadModeType upLoadModeType = strategy.getMode();
-		return Dict.create().set("mode", upLoadModeType.getMode().value())
-			.set("type", upLoadModeType.getType());
+		PluginInfoEntity pluginInfoEntity = coolPluginService.getPluginInfoEntityByHook(uploadHook);
+		String key = null;
+		if (ObjUtil.isNotEmpty(pluginInfoEntity)) {
+			key = pluginInfoEntity.getKey();
+		}
+		return getStrategy(pluginInfoEntity).getMode(key);
 	}
 }

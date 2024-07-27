@@ -102,9 +102,12 @@ public class CoolPluginService {
             // 把 ApplicationContext 对象传递打插件类中，使其在插件中也能正常使用spring bean对象
             CoolPluginInvokers.setApplicationContext(pluginJson.getKey());
         } catch (PersistenceException persistenceException) {
-            // 唯一键冲突
-            CoolPreconditions.returnData(
-                new CoolPreconditions.ReturnData(1, "插件已存在，继续安装将覆盖"));
+            if (persistenceException.getMessage().contains("Duplicate entry")) {
+                // 唯一键冲突
+                CoolPreconditions.returnData(
+                    new CoolPreconditions.ReturnData(1, "插件已存在，继续安装将覆盖"));
+            }
+            CoolPreconditions.alwaysThrow(persistenceException.getMessage());
         } catch (CoolException e) {
             FileUtil.del(jarFile);
             throw e;
@@ -188,6 +191,8 @@ public class CoolPluginService {
             // 重新加载配置不更新
             pluginInfo.setConfig(one.getConfig());
             pluginInfo.getPluginJson().setConfig(one.getConfig());
+            // 设置插件配置
+            CoolPluginInvokers.setPluginJson(pluginInfo.getKey(), pluginInfo);
             CopyOptions options = CopyOptions.create().setIgnoreNullValue(true);
             // 忽略无变更，无需更新的字段
             ignoreNoChange(pluginInfo, one);

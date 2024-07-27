@@ -8,13 +8,13 @@ import com.cool.core.config.FileModeEnum;
 import com.cool.core.config.LocalFileProperties;
 import com.cool.core.exception.CoolException;
 import com.cool.core.exception.CoolPreconditions;
-import com.cool.core.file.UpLoadModeType;
 import com.cool.modules.plugin.entity.PluginInfoEntity;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -70,7 +70,8 @@ public class LocalFileUploadStrategy implements FileUploadStrategy {
      *
      * @return 上传模式
      */
-    public UpLoadModeType getMode() {
-        return new UpLoadModeType(FileModeEnum.LOCAL);
+    public Map<String, String> getMode(String key) {
+        return Map.of("mode", FileModeEnum.LOCAL.value(),
+            "type", FileModeEnum.LOCAL.type());
     }
 }

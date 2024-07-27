@@ -127,9 +127,9 @@ public class DynamicJarLoaderService {
         DynamicJarClassLoader dynamicJarClassLoader,
         boolean force) {
         if (!force && pluginMap.containsKey(key)) {
-            dynamicJarClassLoader.unload();
-            CoolPreconditions.returnData(
-                new CoolPreconditions.ReturnData(1, "插件已存在，继续安装将覆盖"));
+//            dynamicJarClassLoader.unload();
+//            CoolPreconditions.returnData(
+//                new CoolPreconditions.ReturnData(1, "插件已存在，继续安装将覆盖"));
         }
         if (ObjUtil.isNotEmpty(key)) {
             pluginMap.remove(key);

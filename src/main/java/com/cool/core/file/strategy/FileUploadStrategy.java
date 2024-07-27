@@ -1,13 +1,12 @@
 package com.cool.core.file.strategy;
 
-import com.cool.core.file.UpLoadModeType;
 import com.cool.modules.plugin.entity.PluginInfoEntity;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface FileUploadStrategy {
 
@@ -22,7 +21,7 @@ public interface FileUploadStrategy {
      *
      * @return 上传模式
      */
-    UpLoadModeType getMode();
+    Map<String, String> getMode(String key);
 
     default boolean isAbsolutePath(String pathStr) {
         Path path = Paths.get(pathStr);
