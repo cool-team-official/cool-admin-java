@@ -91,12 +91,14 @@ public class CoolPluginService {
     public void install(MultipartFile file, boolean force) {
         File jarFile = null;
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+        String key = null;
         try {
             // 保存jar文件
             jarFile = saveJarFile(file);
             String jarFilePath = jarFile.getAbsolutePath();
             // 加载jar
             PluginJson pluginJson = dynamicJarLoaderService.install(jarFilePath, force);
+            key = pluginJson.getKey();
             // 保存插件信息入库
             savePluginInfo(pluginJson, jarFilePath, jarFile, force);
             // 把 ApplicationContext 对象传递打插件类中，使其在插件中也能正常使用spring bean对象
@@ -107,11 +109,16 @@ public class CoolPluginService {
                 CoolPreconditions.returnData(
                     new CoolPreconditions.ReturnData(1, "插件已存在，继续安装将覆盖"));
             }
+            if (ObjUtil.isNotEmpty(key)) {
+                // 报错失败，调用卸载
+                dynamicJarLoaderService.uninstall(key);
+            }
             CoolPreconditions.alwaysThrow(persistenceException.getMessage());
         } catch (CoolException e) {
             FileUtil.del(jarFile);
             throw e;
         } catch (Exception e) {
+            FileUtil.del(jarFile);
             log.error("插件安装失败", e);
             CoolPreconditions.alwaysThrow("插件安装失败", e);
         } finally {
