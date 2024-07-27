@@ -16,8 +16,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,15 +47,62 @@ public class DynamicJarLoaderService {
         DynamicJarClassLoader dynamicJarClassLoader = new DynamicJarClassLoader(new URL[]{jarUrl},
             Thread.currentThread().getContextClassLoader());
         Thread.currentThread().setContextClassLoader(dynamicJarClassLoader);
+        PluginJson pluginJson = getPluginJsonAndCheck(force, dynamicJarClassLoader);
+        // 加载类
+        List<Class<?>> plugins = new ArrayList<>();
+        int count = 0;
+        uninstall(pluginJson.getKey());
+        Instant start = Instant.now();
+        int progressThreshold = 10; // 输出进度的阈值为10%
+        try (JarFile jarFile = ((JarURLConnection) jarUrl.openConnection()).getJarFile()) {
+            List<JarEntry> list = jarFile.stream().toList();
+            int size = list.size();
+            int currentProgress = 0;
+            for (JarEntry jarEntry : list) {
+                count++;
+                loadClass(jarEntry, dynamicJarClassLoader, plugins);
+                // 计算进度百分比
+                int progress = (int) ((count / (double) size) * 100);
+                // 输出一次进度
+                if (progress % progressThreshold == 0 && currentProgress != progress) {
+                    log.info("安装进度: {}%", progress);
+                    currentProgress = progress;
+                }
+            }
+        } finally{
+            Instant end = Instant.now();
+            Duration timeElapsed = Duration.between(start, end);
+            log.info("本次共加载{}个文件 耗时: {}ms", count, timeElapsed.toMillis());
+        }
+        // 校验插件
+        checkPlugin(plugins);
+        registerPlugin(pluginJson.getKey(), plugins.get(0), dynamicJarClassLoader, force);
+        dynamicJarClassLoaderMap.put(pluginJson.getKey(), dynamicJarClassLoader);
+
+        log.info("插件{}安装成功.", pluginJson.getKey());
+        return pluginJson;
+    }
+
+    /**
+     * 校验，获取插件配置
+     */
+    private PluginJson getPluginJsonAndCheck(boolean force, DynamicJarClassLoader dynamicJarClassLoader) {
         InputStream inputStream = dynamicJarClassLoader.getResourceAsStream("plugin.json");
         CoolPreconditions.check(ObjUtil.isEmpty(inputStream), "不合规插件：未找到plugin.json文件");
         String pluginJsonStr = StrUtil.str(IoUtil.readBytes(inputStream), "UTF-8");
         PluginJson pluginJson = JSONUtil.toBean(pluginJsonStr, PluginJson.class);
         CoolPreconditions.check(ObjUtil.isEmpty(pluginJson.getKey()), "该插件缺少唯一标识");
+        if (!force) {
+            PluginInfoEntity byKey = pluginInfoService.getByKey(pluginJson.getKey());
+            if (ObjUtil.isNotEmpty(byKey)) {
+                CoolPreconditions.returnData(
+                    new CoolPreconditions.ReturnData(1, "插件已存在，继续安装将覆盖"));
+            }
+        }
         if (ObjUtil.isNotEmpty(pluginJson.getHook())) {
             // 查找hook是否已经存在,提示是否要替换，原hook将关闭
             PluginInfoEntity pluginInfoEntity = pluginInfoService
-                .getPluginInfoEntityByHookNoJarFile(pluginJson.getHook());
+                .getPluginInfoEntityByHook(pluginJson.getHook());
             if (!force) {
                 CoolPreconditions.returnData(
                     ObjUtil.isNotEmpty(pluginInfoEntity)
@@ -69,32 +117,15 @@ public class DynamicJarLoaderService {
                 pluginJson.setSameHookId(pluginInfoEntity.getId());
             }
         }
-
-        // 加载类
-        List<Class<?>> plugins = new ArrayList<>();
-        try (JarFile jarFile = ((JarURLConnection) jarUrl.openConnection()).getJarFile()) {
-            Enumeration<JarEntry> entries = jarFile.entries();
-            while (entries.hasMoreElements()) {
-                loadClass(entries, dynamicJarClassLoader, plugins);
-            }
-        }
-
-        // 校验插件
-        checkPlugin(plugins);
-        registerPlugin(pluginJson.getKey(), plugins.get(0), dynamicJarClassLoader, force);
-        dynamicJarClassLoaderMap.put(pluginJson.getKey(), dynamicJarClassLoader);
-
-        log.info("插件{}初始化成功.", pluginJson.getKey());
         return pluginJson;
     }
 
     /**
      * 加载class
      */
-    private static void loadClass(Enumeration<JarEntry> entries,
+    private static void loadClass(JarEntry jarEntry,
         DynamicJarClassLoader dynamicJarClassLoader, List<Class<?>> plugins)
         throws ClassNotFoundException {
-        JarEntry jarEntry = entries.nextElement();
 
         String entryName = jarEntry.getName();
         if (!entryName.endsWith(".class")) {
@@ -142,9 +173,10 @@ public class DynamicJarLoaderService {
      */
     public boolean uninstall(String key) {
         DynamicJarClassLoader dynamicJarClassLoader = getDynamicJarClassLoader(key);
-        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+//        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+        log.info("插件{}开始卸载", key);
         try {
-            Thread.currentThread().setContextClassLoader(dynamicJarClassLoader);
+//            Thread.currentThread().setContextClassLoader(dynamicJarClassLoader);
             pluginMap.remove(key);
             if (dynamicJarClassLoader != null) {
                 dynamicJarClassLoader.unload();
@@ -153,9 +185,9 @@ public class DynamicJarLoaderService {
             log.error("uninstall {}失败", key, e);
             CoolPreconditions.alwaysThrow("卸载失败");
         } finally {
-            Thread.currentThread().setContextClassLoader(originalClassLoader);
+//            Thread.currentThread().setContextClassLoader(originalClassLoader);
         }
-        log.info("卸载插件{}", key);
+        log.info("插件{}卸载完成", key);
         return true;
     }
 
