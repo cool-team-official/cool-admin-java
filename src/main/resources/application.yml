@@ -111,8 +111,11 @@ mybatis-flex:
 cool:
   # 缓存名称
   cacheName: comm
-  # 插件安装位置
-  pluginPath: assets/plugin
+  plugin:
+    # 插件安装位置
+    path: assets/plugin
+    # 插件文件是否入库（默认否）,先预留该字段，如果是集群部署需要开启,
+    toDb: false
   # token 相关配置
   token:
     # 过期时间 单位：秒 半小时

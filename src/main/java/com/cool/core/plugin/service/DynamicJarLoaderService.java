@@ -8,16 +8,13 @@ import cn.hutool.json.JSONUtil;
 import com.cool.core.config.PluginJson;
 import com.cool.core.exception.CoolPreconditions;
 import com.cool.core.plugin.config.DynamicJarClassLoader;
-import com.cool.core.util.AnnotationUtils;
-import com.cool.core.util.CompilerUtils;
 import com.cool.modules.plugin.entity.PluginInfoEntity;
 import com.cool.modules.plugin.service.PluginInfoService;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.URL;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -48,39 +45,42 @@ public class DynamicJarLoaderService {
             Thread.currentThread().getContextClassLoader());
         Thread.currentThread().setContextClassLoader(dynamicJarClassLoader);
         PluginJson pluginJson = getPluginJsonAndCheck(force, dynamicJarClassLoader);
-        // 加载类
-        List<Class<?>> plugins = new ArrayList<>();
-        int count = 0;
+        // 历史如果有安装过，先卸载
         uninstall(pluginJson.getKey());
-        Instant start = Instant.now();
-        int progressThreshold = 10; // 输出进度的阈值为10%
-        try (JarFile jarFile = ((JarURLConnection) jarUrl.openConnection()).getJarFile()) {
-            List<JarEntry> list = jarFile.stream().toList();
-            int size = list.size();
-            int currentProgress = 0;
-            for (JarEntry jarEntry : list) {
-                count++;
-                loadClass(jarEntry, dynamicJarClassLoader, plugins);
-                // 计算进度百分比
-                int progress = (int) ((count / (double) size) * 100);
-                // 输出一次进度
-                if (progress % progressThreshold == 0 && currentProgress != progress) {
-                    log.info("安装进度: {}%", progress);
-                    currentProgress = progress;
-                }
-            }
-        } finally{
-            Instant end = Instant.now();
-            Duration timeElapsed = Duration.between(start, end);
-            log.info("本次共加载{}个文件 耗时: {}ms", count, timeElapsed.toMillis());
-        }
+        // 加载class
+        List<Class<?>> plugins = loadClass(jarUrl, dynamicJarClassLoader);
         // 校验插件
         checkPlugin(plugins);
+        // 注册插件,目前一个插件包，只允许有一个插件入口
         registerPlugin(pluginJson.getKey(), plugins.get(0), dynamicJarClassLoader, force);
-        dynamicJarClassLoaderMap.put(pluginJson.getKey(), dynamicJarClassLoader);
-
-        log.info("插件{}安装成功.", pluginJson.getKey());
         return pluginJson;
+    }
+
+    /**
+     * 加载class
+     */
+    private static List<Class<?>> loadClass(URL jarUrl,
+        DynamicJarClassLoader dynamicJarClassLoader) throws IOException {
+        // 加载类
+        List<Class<?>> plugins = new ArrayList<>();
+        try (JarFile jarFile = ((JarURLConnection) jarUrl.openConnection()).getJarFile()) {
+            List<JarEntry> list = jarFile.stream().filter(o -> o.getName().endsWith(".class")).toList();
+            List<JarEntry> firstNElements = getFirstNElements(list, 100);
+            // 先加载前100个类，主够包含了插件主类，其余的异步加载
+            dynamicJarClassLoader.loadClass(firstNElements, plugins);
+            // 异步加载插件依赖类
+            dynamicJarClassLoader.asyncLoadClass(list);
+        }
+        return plugins;
+    }
+
+    public static <T> List<T> getFirstNElements(List<T> list, int n) {
+        // 确保 n 不超过 list 的大小
+        if (list.size() <= n) {
+            return new ArrayList<>(list); // 返回原列表的副本
+        } else {
+            return new ArrayList<>(list.subList(0, n)); // 返回前 N 个元素的副本
+        }
     }
 
     /**
@@ -121,37 +121,6 @@ public class DynamicJarLoaderService {
     }
 
     /**
-     * 加载class
-     */
-    private static void loadClass(JarEntry jarEntry,
-        DynamicJarClassLoader dynamicJarClassLoader, List<Class<?>> plugins)
-        throws ClassNotFoundException {
-
-        String entryName = jarEntry.getName();
-        if (!entryName.endsWith(".class")) {
-            return;
-        }
-        String className = entryName.replace('/', '.').substring(0, entryName.length() - 6);
-        if (entryName.startsWith(CompilerUtils.META_INF_VERSIONS)) {
-            // 处理多版本类
-            String jdkVersion = CompilerUtils.getJdkVersion();
-            if (!entryName.startsWith(CompilerUtils.META_INF_VERSIONS + jdkVersion)) {
-                return;
-            }
-            // 替换版本目录
-            className = className.replace((CompilerUtils.META_INF_VERSIONS + jdkVersion).replace("/", ".") + ".", "");
-        }
-        try {
-            // 加载类
-            Class<?> clazz = dynamicJarClassLoader.loadClass(className);
-            if (AnnotationUtils.hasCoolPluginAnnotation(clazz)) {
-                plugins.add(clazz);
-            }
-        } catch (NoClassDefFoundError | UnsupportedClassVersionError ignored) {
-        }
-    }
-
-    /**
      * 注册插件
      */
     private void registerPlugin(String key, Class<?> pluginClazz,
@@ -165,30 +134,23 @@ public class DynamicJarLoaderService {
         if (ObjUtil.isNotEmpty(key)) {
             pluginMap.remove(key);
             pluginMap.put(key, ReflectUtil.newInstance(pluginClazz));
+            dynamicJarClassLoaderMap.put(key, dynamicJarClassLoader);
         }
+        log.info("插件{}注册成功.", key);
     }
 
     /**
      * 卸载
      */
-    public boolean uninstall(String key) {
+    public void uninstall(String key) {
         DynamicJarClassLoader dynamicJarClassLoader = getDynamicJarClassLoader(key);
-//        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-        log.info("插件{}开始卸载", key);
-        try {
-//            Thread.currentThread().setContextClassLoader(dynamicJarClassLoader);
-            pluginMap.remove(key);
-            if (dynamicJarClassLoader != null) {
-                dynamicJarClassLoader.unload();
-            }
-        } catch (Exception e) {
-            log.error("uninstall {}失败", key, e);
-            CoolPreconditions.alwaysThrow("卸载失败");
-        } finally {
-//            Thread.currentThread().setContextClassLoader(originalClassLoader);
+        if (dynamicJarClassLoader == null) {
+            return;
         }
+        log.info("插件{}开始卸载", key);
+        pluginMap.remove(key);
+        dynamicJarClassLoader.unload();
         log.info("插件{}卸载完成", key);
-        return true;
     }
 
     /**

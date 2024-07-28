@@ -1,15 +1,14 @@
 package com.cool.core.util;
 
 import com.cool.core.annotation.CoolPlugin;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Modifier;
 
 @Slf4j
 public class AnnotationUtils {
@@ -61,16 +60,13 @@ public class AnnotationUtils {
             return false;
         }
         try {
-//            if (clazz.getAnnotation(CoolPlugin.class) != null) {
-//                return true;
-//            }
             ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
             if (clazz.getAnnotation(
                     (Class<? extends Annotation>) contextClassLoader.loadClass(CoolPlugin.class.getName())) != null) {
                 return true;
             }
         } catch (Exception e) {
-            log.error("出现异常：{}", e.getMessage());
+            log.error("出现异常：{}", e.getMessage(), e);
         }
         return false;
     }

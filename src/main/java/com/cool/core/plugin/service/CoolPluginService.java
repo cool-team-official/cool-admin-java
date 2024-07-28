@@ -5,6 +5,7 @@ import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.codec.Base64Encoder;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import com.cool.core.config.PluginJson;
@@ -43,8 +44,11 @@ public class CoolPluginService {
 
     final private PluginInfoService pluginInfoService;
 
-    @Value("${cool.pluginPath}")
+    @Value("${cool.plugin.path}")
     private String pluginPath;
+
+    @Value("${cool.plugin.toDb:false}")
+    private Boolean toDb;
 
     public void init() {
         List<PluginInfoEntity> list = pluginInfoService
@@ -65,10 +69,14 @@ public class CoolPluginService {
     private void initInstall(PluginInfoEntity entity) {
         PluginJson pluginJson = entity.getPluginJson();
         File file = new File(pluginJson.getJarPath());
-        // 检查路径是否存在
+        // 检查文件是否存在
         if (!file.exists()) {
-            log.warn("插件不存在，请重新安装!");
-            return;
+            PluginInfoEntity pluginInfoEntity = pluginInfoService.getById(entity.getId());
+            if (ObjUtil.isEmpty(pluginInfoEntity.getJarFile())) {
+                log.warn("插件文件不存在，请重新安装!");
+                return;
+            }
+            FileUtil.writeBytes(pluginInfoEntity.getJarFile(), file);
         }
         file = new File(pluginJson.getJarPath());
         if (file.exists()) {
@@ -100,7 +108,7 @@ public class CoolPluginService {
             PluginJson pluginJson = dynamicJarLoaderService.install(jarFilePath, force);
             key = pluginJson.getKey();
             // 保存插件信息入库
-            savePluginInfo(pluginJson, jarFilePath, force);
+            savePluginInfo(pluginJson, jarFilePath, jarFile, force);
             // 把 ApplicationContext 对象传递打插件类中，使其在插件中也能正常使用spring bean对象
             CoolPluginInvokers.setApplicationContext(pluginJson.getKey());
         } catch (PersistenceException persistenceException) {
@@ -159,13 +167,12 @@ public class CoolPluginService {
      * 卸载
      */
     public void uninstall(Long id) {
-        PluginInfoEntity pluginInfoEntity = pluginInfoService.getById(id);
+        PluginInfoEntity pluginInfoEntity = pluginInfoService.getPluginInfoEntityById(id);
         CoolPreconditions.checkEmpty(pluginInfoEntity, "插件不存在");
-        if (dynamicJarLoaderService.uninstall(pluginInfoEntity.getKey())) {
-            boolean flag = pluginInfoEntity.removeById();
-            if (flag) {
-                FileUtil.del(pluginInfoEntity.getPluginJson().getJarPath());
-            }
+        dynamicJarLoaderService.uninstall(pluginInfoEntity.getKey());
+        boolean flag = pluginInfoEntity.removeById();
+        if (flag) {
+            FileUtil.del(pluginInfoEntity.getPluginJson().getJarPath());
         }
     }
 
@@ -173,6 +180,7 @@ public class CoolPluginService {
      * 保存插件信息
      */
     private void savePluginInfo(PluginJson pluginJson, String jarFilePath ,
+        File jarFile,
         boolean force) {
         CoolPreconditions.checkEmpty(pluginJson, "插件安装失败");
         pluginJson.setJarPath(jarFilePath);
@@ -181,6 +189,10 @@ public class CoolPluginService {
         setLogoOrReadme(pluginJson, pluginInfo);
         pluginInfo.setKey(pluginJson.getKey());
         pluginInfo.setPluginJson(pluginJson);
+        if (BooleanUtil.isTrue(toDb)) {
+            // 转二进制
+            pluginInfo.setJarFile(FileUtil.readBytes(jarFile));
+        }
         if (force) {
             // 判断是否有同名插件， 有将其关闭
             closeSameNamePlugin(pluginJson);
@@ -213,6 +225,8 @@ public class CoolPluginService {
                 // 覆盖时删除旧版本插件
                 FileUtil.del(oldJarPath);
             }
+        } else {
+            pluginInfo.save();
         }
     }
 
@@ -268,7 +282,7 @@ public class CoolPluginService {
     }
 
     public void updatePlugin(PluginInfoEntity entity) {
-        PluginInfoEntity dbPluginInfoEntity = pluginInfoService.getById(
+        PluginInfoEntity dbPluginInfoEntity = pluginInfoService.getPluginInfoEntityById(
             entity.getId());
         // 调用插件更新配置标识
         boolean invokePluginConfig = false;

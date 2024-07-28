@@ -52,7 +52,7 @@ public class PluginInfoEntity extends BaseEntity<PluginInfoEntity> {
     @Column(typeHandler = Fastjson2TypeHandler.class)
     private PluginJson pluginJson;
 
-    @ColumnDefine(comment = "jar二进制文件-废弃", type = "longblob")
+    @ColumnDefine(comment = "jar二进制文件(可配置是否入库)", type = "longblob")
     private byte[] jarFile;
 
     @ColumnDefine(comment = "配置", type = "json")

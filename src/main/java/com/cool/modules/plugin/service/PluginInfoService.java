@@ -7,4 +7,6 @@ public interface PluginInfoService extends BaseService<PluginInfoEntity> {
     PluginInfoEntity getByKey(String key);
 
     PluginInfoEntity getPluginInfoEntityByHook(String hook);
+
+    PluginInfoEntity getPluginInfoEntityById(Long id);
 }
