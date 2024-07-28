@@ -43,22 +43,19 @@ public class DynamicJarClassLoader extends URLClassLoader {
     public void unload() {
         CoolPreconditions.check(lock, "异步加载任务还未完成，请稍后重试......");
         lock = true;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    for (Map.Entry<String, Class<?>> entry : loadedClasses.entrySet()) {
-                        // 从已加载的类集合中移除该类
-                        String className = entry.getKey();
-                        loadedClasses.remove(className);
-                    }
-                    // 从其父类加载器的加载器层次结构中移除该类加载器
-                    close();
-                } catch (Exception e) {
-                    log.error("unload error", e);
-                } finally{
-                    lock = false;
+        new Thread(() -> {
+            try {
+                for (Map.Entry<String, Class<?>> entry : loadedClasses.entrySet()) {
+                    // 从已加载的类集合中移除该类
+                    String className = entry.getKey();
+                    loadedClasses.remove(className);
                 }
+                // 从其父类加载器的加载器层次结构中移除该类加载器
+                close();
+            } catch (Exception e) {
+                log.error("unload error", e);
+            } finally{
+                lock = false;
             }
         }).start();
     }
@@ -98,36 +95,33 @@ public class DynamicJarClassLoader extends URLClassLoader {
     /**
      * 异步加载
      */
-    public void asyncLoadClass(List<JarEntry> list) {
+    public void asyncLoadClass(String key, List<JarEntry> list) {
         CoolPreconditions.check(lock, "异步加载任务还未完成，请稍后重试......");
         lock = true;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                log.info("开始异步加载....");
-                Instant start = Instant.now();
-                int size = list.size();
-                int currentProgress = 0;
-                int progressThreshold = 10; // 输出进度的阈值为10%
-                int count = 0;
-                try{
-                    for (JarEntry jarEntry : list) {
-                        count++;
-                        loadClass(jarEntry, null);
-                        // 计算进度百分比
-                        int progress = (int) ((count / (double) size) * 100);
-                        // 输出一次进度
-                        if (progress % progressThreshold == 0 && currentProgress != progress) {
-                            log.info("异步加载进度: {}%", progress);
-                            currentProgress = progress;
-                        }
+        new Thread(() -> {
+            log.info("开始异步加载插件{}依赖类....", key);
+            Instant start = Instant.now();
+            int size = list.size();
+            int currentProgress = 0;
+            int progressThreshold = 10; // 输出进度的阈值为10%
+            int count = 0;
+            try{
+                for (JarEntry jarEntry : list) {
+                    count++;
+                    loadClass(jarEntry, null);
+                    // 计算进度百分比
+                    int progress = (int) ((count / (double) size) * 100);
+                    // 输出一次进度
+                    if (progress % progressThreshold == 0 && currentProgress != progress) {
+                        log.info("插件{}依赖类异步加载进度: {}%", key, progress);
+                        currentProgress = progress;
                     }
-                } finally{
-                    Instant end = Instant.now();
-                    Duration timeElapsed = Duration.between(start, end);
-                    log.info("异步加载完成本次共加载{}个文件 耗时: {}ms", count, timeElapsed.toMillis());
-                    lock = false;
                 }
+            } finally{
+                Instant end = Instant.now();
+                Duration timeElapsed = Duration.between(start, end);
+                log.info("异步加载插件{}依赖类完成，共加载{}个文件 耗时: {}ms", key, count, timeElapsed.toMillis());
+                lock = false;
             }
         }).start();
     }

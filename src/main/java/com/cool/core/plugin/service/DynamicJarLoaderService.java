@@ -48,7 +48,7 @@ public class DynamicJarLoaderService {
         // 历史如果有安装过，先卸载
         uninstall(pluginJson.getKey());
         // 加载class
-        List<Class<?>> plugins = loadClass(jarUrl, dynamicJarClassLoader);
+        List<Class<?>> plugins = loadClass(pluginJson.getKey(), jarUrl, dynamicJarClassLoader);
         // 校验插件
         checkPlugin(plugins);
         // 注册插件,目前一个插件包，只允许有一个插件入口
@@ -59,7 +59,7 @@ public class DynamicJarLoaderService {
     /**
      * 加载class
      */
-    private static List<Class<?>> loadClass(URL jarUrl,
+    private static List<Class<?>> loadClass(String key, URL jarUrl,
         DynamicJarClassLoader dynamicJarClassLoader) throws IOException {
         // 加载类
         List<Class<?>> plugins = new ArrayList<>();
@@ -69,7 +69,7 @@ public class DynamicJarLoaderService {
             // 先加载前100个类，主够包含了插件主类，其余的异步加载
             dynamicJarClassLoader.loadClass(firstNElements, plugins);
             // 异步加载插件依赖类
-            dynamicJarClassLoader.asyncLoadClass(list);
+            dynamicJarClassLoader.asyncLoadClass(key, list);
         }
         return plugins;
     }
