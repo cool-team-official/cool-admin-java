@@ -6,26 +6,11 @@ import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.cool.core.config.CustomOpenApiResource;
 import com.mybatisflex.annotation.Table;
 import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +21,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 实体信息与路径
@@ -102,8 +94,9 @@ public class CoolEps {
             if (StrUtil.isNotEmpty(module)) {
                 String entityName = getEntity(method.getBeanType());
                 String methodPath = getMethodUrl(method);
+                String escapedMethodPath = methodPath.replace("{", "\\{").replace("}", "\\}");
                 String prefix = Objects.requireNonNull(getUrl(info))
-                        .replaceFirst("(?s)(.*)" + methodPath, "$1");
+                        .replaceFirst("(?s)(.*)" + escapedMethodPath, "$1");
                 Dict result = Dict.create();
                 int type = 0;
                 if (prefix.startsWith("/admin")) {
