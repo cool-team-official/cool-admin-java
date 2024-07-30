@@ -91,6 +91,7 @@ public class BaseSysUserServiceImpl extends BaseServiceImpl<BaseSysUserMapper, B
         BaseSysUserEntity userEntity = getById(userId);
         CoolPreconditions.checkEmpty(userEntity, "用户不存在");
         userEntity.setNickName(body.getStr("nickName"));
+        userEntity.setHeadImg(body.getStr("headImg"));
         // 修改密码
         if (StrUtil.isNotEmpty(body.getStr("password"))) {
             userEntity.setPassword(MD5.create().digestHex(body.getStr("password")));
