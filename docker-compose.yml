@@ -11,6 +11,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: "123456"  # 设置 root 用户密码
       MYSQL_DATABASE: "cool"         # 创建一个初始数据库
+    networks:
+      - backend
     ports:
       - "3306:3306"                       # 将主机的 3306 端口映射到容器的 3306 端口
     volumes:
@@ -28,3 +30,14 @@ services:
       - backend
     ports:
       - 6379:6379
+
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local
+  redis-data:
+    driver: local
