@@ -2,14 +2,12 @@ package com.cool.modules.base.entity.sys;
 
 import com.cool.core.base.BaseEntity;
 import com.mybatisflex.annotation.Column;
-import com.tangzc.autotable.annotation.Index;
-
-import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
 import com.mybatisflex.annotation.Table;
+import com.tangzc.autotable.annotation.Index;
+import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -22,7 +20,7 @@ public class BaseSysMenuEntity extends BaseEntity<BaseSysMenuEntity> {
     @ColumnDefine(comment = "菜单名称")
     private String name;
 
-    @ColumnDefine(comment = "权限")
+    @ColumnDefine(comment = "权限", type = "text")
     private String perms;
 
     @ColumnDefine(comment = "类型 0：目录 1：菜单 2：按钮", type = "tinyint", defaultValue = "0")

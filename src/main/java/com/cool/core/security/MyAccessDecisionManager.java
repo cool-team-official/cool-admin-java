@@ -1,5 +1,8 @@
 package com.cool.core.security;
 
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDecisionManager;
@@ -10,10 +13,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.FilterInvocation;
 import org.springframework.stereotype.Component;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * 权限管理决断器 判断用户拥有的权限或角色是否有资源访问权限
@@ -31,7 +30,7 @@ public class MyAccessDecisionManager implements AccessDecisionManager {
         if (configAttributes == null) {
             return;
         }
-        List<String> urls = ignoredUrlsProperties.getUrls();
+        List<String> urls = ignoredUrlsProperties.getAdminAuthUrls();
         String url = ((FilterInvocation) o).getRequestUrl().split("[?]")[0];
         if (urls.contains(url)) {
             return;

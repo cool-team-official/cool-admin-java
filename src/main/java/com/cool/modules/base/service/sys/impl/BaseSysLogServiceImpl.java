@@ -1,10 +1,12 @@
 package com.cool.modules.base.service.sys.impl;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.text.AntPathMatcher;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.cool.core.base.BaseServiceImpl;
+import com.cool.core.security.IgnoredUrlsProperties;
 import com.cool.core.util.IPUtils;
 import com.cool.modules.base.entity.sys.BaseSysLogEntity;
 import com.cool.modules.base.entity.sys.BaseSysUserEntity;
@@ -35,10 +37,13 @@ public class BaseSysLogServiceImpl extends BaseServiceImpl<BaseSysLogMapper, Bas
 
 	private final CoolSecurityUtil coolSecurityUtil;
 
+	private final IgnoredUrlsProperties ignoredUrlsProperties;
+
 	private final IPUtils ipUtils;
 
 	@Value("${cool.log.maxJsonLength:1024}")
 	private int maxJsonLength;
+	private static final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
 	@Override
 	public Object page(
@@ -68,6 +73,10 @@ public class BaseSysLogServiceImpl extends BaseServiceImpl<BaseSysLogMapper, Bas
 	@Override
 	public void record(HttpServletRequest request, JSONObject requestParams) {
 		String requestURI = request.getRequestURI();
+		if (isIgnoreUrl(requestURI)) {
+			// 配置了忽略记录请求日志
+			return;
+		}
 		String ipAddr = ipUtils.getIpAddr(request);
 		JSONObject userInfo = coolSecurityUtil.userInfo(requestParams);
 
@@ -85,6 +94,11 @@ public class BaseSysLogServiceImpl extends BaseServiceImpl<BaseSysLogMapper, Bas
 			newJSONObject.clear();
 		}
 		recordAsync(requestURI, ipAddr, userId, newJSONObject);
+	}
+
+	private boolean isIgnoreUrl(String requestURI) {
+		return ignoredUrlsProperties.getLogUrls().stream()
+            .anyMatch(url -> antPathMatcher.match(url, requestURI));
 	}
 
 

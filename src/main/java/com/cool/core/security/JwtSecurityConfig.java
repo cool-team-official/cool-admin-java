@@ -2,10 +2,16 @@ package com.cool.core.security;
 
 import com.cool.core.annotation.TokenIgnore;
 import com.cool.modules.base.security.JwtAuthenticationTokenFilter;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -13,7 +19,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,17 +27,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.context.ApplicationContext;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.util.pattern.PathPattern;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 @EnableWebSecurity
 @Configuration
@@ -60,11 +59,11 @@ public class JwtSecurityConfig {
                 .authorizeHttpRequests(
                         conf -> {
                             conf.requestMatchers(
-                                            ignoredUrlsProperties.getUrls().toArray(String[]::new))
+                                            ignoredUrlsProperties.getAdminAuthUrls().toArray(String[]::new))
                                     .permitAll();
                             conf.requestMatchers("/admin/**").authenticated();
                         })
-                .headers(config -> config.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+                .headers(config -> config.frameOptions(FrameOptionsConfig::disable))
                 // 允许网页iframe
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(conf -> conf.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -93,7 +92,7 @@ public class JwtSecurityConfig {
                     }
                     // 遍历 tokenIgnoreCtr.value()
                     for (String path : tokenIgnoreCtr.value()) {
-                        ignoredUrlsProperties.getUrls().add(String.join("/", urls) + "/" + path);
+                        ignoredUrlsProperties.getAdminAuthUrls().add(String.join("/", urls) + "/" + path);
                     }
                     handlerCtr.add(handlerMethod.getBeanType().getName());
                 });
@@ -112,7 +111,7 @@ public class JwtSecurityConfig {
                 for (PathPattern path : requestMappingInfo.getPathPatternsCondition().getPatterns()) {
                     url.append(path);
                 }
-                ignoredUrlsProperties.getUrls().add(url.toString());
+                ignoredUrlsProperties.getAdminAuthUrls().add(url.toString());
             }
         });
     }

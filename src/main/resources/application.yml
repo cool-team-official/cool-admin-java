@@ -68,9 +68,10 @@ spring:
             threadPriority: 9
             threadsInheritContextClassLoaderOfInitializingThread: true
 
-# 忽略鉴权url
+# 忽略url
 ignored:
-  urls:
+  # 忽略后台鉴权url
+  adminAuthUrls:
     - /
     - /upload/**
     - /actuator/**
@@ -85,7 +86,11 @@ ignored:
     - /js/*
     - /druid/**
     - /admin/base/open/**
-
+  # 忽略记录请求日志url
+  logUrls:
+    - /*
+    - /css/*
+    - /js/*
 # 文档
 springdoc:
   api-docs:
