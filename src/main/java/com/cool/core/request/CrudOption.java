@@ -107,14 +107,14 @@ public class CrudOption<T> {
         if (ObjectUtil.isNotEmpty(queryTables)) {
             // 取主表作为排序字段别名
             QueryTable queryTable = queryTables.get(0);
-            tableAlias = "`" + queryTable.getName() + "`.";
+            tableAlias = queryTable.getName() + ".";
         }
         String order = requestParams.getStr("order",
             tableAnnotation.camelToUnderline() ? "create_time" : "createTime");
         String sort = requestParams.getStr("sort", "desc");
         if (StrUtil.isNotEmpty(order) && StrUtil.isNotEmpty(sort)) {
             queryWrapper.orderBy(
-                tableAlias + "`" + (tableAnnotation.camelToUnderline() ? StrUtil.toUnderlineCase(order) : order) + "`",
+                tableAlias + (tableAnnotation.camelToUnderline() ? StrUtil.toUnderlineCase(order) : order),
                 sort.equals("asc"));
         }
     }

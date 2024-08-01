@@ -2,12 +2,10 @@ package com.cool.modules.base.entity.sys;
 
 import com.cool.core.base.BaseEntity;
 import com.mybatisflex.annotation.Column;
-import com.tangzc.autotable.annotation.Index;
-import com.tangzc.autotable.annotation.enums.IndexTypeEnum;
-
-import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
 import com.mybatisflex.annotation.Table;
 import com.tangzc.autotable.annotation.Index;
+import com.tangzc.autotable.annotation.enums.IndexTypeEnum;
+import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -47,7 +45,7 @@ public class BaseSysUserEntity extends BaseEntity<BaseSysUserEntity> {
     @ColumnDefine(comment = "备注")
     private String remark;
 
-    @ColumnDefine(comment = "状态 0:禁用 1：启用", defaultValue = "1", type = "tinyint")
+    @ColumnDefine(comment = "状态 0:禁用 1：启用", defaultValue = "1")
     private Integer status;
 
     // 部门名称

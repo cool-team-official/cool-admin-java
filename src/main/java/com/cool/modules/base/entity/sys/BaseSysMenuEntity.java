@@ -23,7 +23,7 @@ public class BaseSysMenuEntity extends BaseEntity<BaseSysMenuEntity> {
     @ColumnDefine(comment = "权限", type = "text")
     private String perms;
 
-    @ColumnDefine(comment = "类型 0：目录 1：菜单 2：按钮", type = "tinyint", defaultValue = "0")
+    @ColumnDefine(comment = "类型 0：目录 1：菜单 2：按钮", defaultValue = "0")
     private Integer type;
 
     @ColumnDefine(comment = "图标")

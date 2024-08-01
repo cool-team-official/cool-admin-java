@@ -9,7 +9,6 @@ import com.cool.core.annotation.IgnoreRecycleData;
 import com.cool.core.base.BaseController;
 import com.cool.core.plugin.service.CoolPluginService;
 import com.cool.core.request.R;
-import com.cool.core.util.EntityUtils;
 import com.cool.modules.plugin.entity.PluginInfoEntity;
 import com.cool.modules.plugin.service.PluginInfoService;
 import com.mybatisflex.core.query.QueryWrapper;
@@ -38,8 +37,7 @@ public class AdminPluginInfoController extends BaseController<PluginInfoService,
 
         setPageOption(createOp().queryWrapper(
                 QueryWrapper.create().orderBy(PLUGIN_INFO_ENTITY.UPDATE_TIME, false))
-            .select(EntityUtils.getFieldNamesWithSuperClass(PLUGIN_INFO_ENTITY.DEFAULT_COLUMNS,
-                PLUGIN_INFO_ENTITY.JAR_FILE.getName())));
+            .select(PLUGIN_INFO_ENTITY.DEFAULT_COLUMNS));
     }
 
     @Override

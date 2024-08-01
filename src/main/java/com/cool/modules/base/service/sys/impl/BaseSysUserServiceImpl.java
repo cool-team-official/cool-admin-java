@@ -26,6 +26,7 @@ import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.update.UpdateChain;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -44,6 +45,9 @@ public class BaseSysUserServiceImpl extends BaseServiceImpl<BaseSysUserMapper, B
 
     final private BaseSysDepartmentMapper baseSysDepartmentMapper;
 
+    @Value("${spring.datasource.url}")
+    private String datasourceUrl;
+
     @Override
     public Object page(JSONObject requestParams, Page<BaseSysUserEntity> page, QueryWrapper qw) {
         String keyWord = requestParams.getStr("keyWord");
@@ -53,11 +57,21 @@ public class BaseSysUserServiceImpl extends BaseServiceImpl<BaseSysUserMapper, B
         // 用户的部门权限
         Long[] permsDepartmentArr = coolCache.get("admin:department:" + tokenInfo.get("userId"),
             Long[].class);
-
-        qw.select(BASE_SYS_USER_ENTITY.ALL_COLUMNS,
+        // TODO 临时兼容 postgresql
+        if (datasourceUrl.contains("postgresql")) {
+            qw.select(BASE_SYS_USER_ENTITY.ALL_COLUMNS
+//                ,
+//                groupConcat(BASE_SYS_ROLE_ENTITY.NAME).as("roleName"),
+//                BASE_SYS_DEPARTMENT_ENTITY.NAME.as("departmentName")
+            );
+        } else {
+            qw.select(BASE_SYS_USER_ENTITY.ALL_COLUMNS,
                 groupConcat(BASE_SYS_ROLE_ENTITY.NAME).as("roleName"),
-                BASE_SYS_DEPARTMENT_ENTITY.NAME.as("departmentName"))
-            .from(BASE_SYS_USER_ENTITY).leftJoin(BASE_SYS_USER_ROLE_ENTITY)
+                BASE_SYS_DEPARTMENT_ENTITY.NAME.as("departmentName")
+            );
+        }
+
+        qw.from(BASE_SYS_USER_ENTITY).leftJoin(BASE_SYS_USER_ROLE_ENTITY)
             .on(BASE_SYS_USER_ENTITY.ID.eq(BASE_SYS_USER_ROLE_ENTITY.USER_ID))
             .leftJoin(BASE_SYS_ROLE_ENTITY)
             .on(BASE_SYS_USER_ROLE_ENTITY.USER_ID.eq(BASE_SYS_ROLE_ENTITY.ID))

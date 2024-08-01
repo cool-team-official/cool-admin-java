@@ -2,11 +2,10 @@ package com.cool.modules.space.entity;
 
 import com.cool.core.base.BaseEntity;
 import com.mybatisflex.annotation.Column;
+import com.mybatisflex.annotation.Table;
 import com.tangzc.autotable.annotation.Ignore;
 import com.tangzc.autotable.annotation.Index;
-
 import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
-import com.mybatisflex.annotation.Table;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,7 +22,7 @@ public class SpaceInfoEntity extends BaseEntity<SpaceInfoEntity> {
     @ColumnDefine(comment = "类型", notNull = true)
     private String type;
 
-    @ColumnDefine(comment = "分类ID", type = "tinyint")
+    @ColumnDefine(comment = "分类ID")
     private Integer classifyId;
 
     @Index()

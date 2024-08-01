@@ -1,5 +1,9 @@
 package com.cool.modules.base.service.sys.impl;
 
+import static com.cool.modules.base.entity.sys.table.BaseSysMenuEntityTableDef.BASE_SYS_MENU_ENTITY;
+import static com.cool.modules.base.entity.sys.table.BaseSysRoleMenuEntityTableDef.BASE_SYS_ROLE_MENU_ENTITY;
+import static com.cool.modules.base.entity.sys.table.BaseSysUserRoleEntityTableDef.BASE_SYS_USER_ROLE_ENTITY;
+
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.Dict;
@@ -14,16 +18,11 @@ import com.cool.modules.base.security.CoolSecurityUtil;
 import com.cool.modules.base.service.sys.BaseSysPermsService;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.row.Row;
+import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
-
-import static com.cool.modules.base.entity.sys.table.BaseSysMenuEntityTableDef.BASE_SYS_MENU_ENTITY;
-import static com.cool.modules.base.entity.sys.table.BaseSysRoleMenuEntityTableDef.BASE_SYS_ROLE_MENU_ENTITY;
-import static com.cool.modules.base.entity.sys.table.BaseSysUserRoleEntityTableDef.BASE_SYS_USER_ROLE_ENTITY;
 
 @Service
 @RequiredArgsConstructor
@@ -65,9 +64,12 @@ public class BaseSysPermsServiceImpl implements BaseSysPermsService {
     }
 
     private Long[] getLongs(Long[] roleIds) {
+        QueryWrapper queryWrapper = QueryWrapper.create();
+        if (roleIds != null && !CollUtil.toList(roleIds).contains(1L)) {
+            queryWrapper.in(BaseSysRoleDepartmentEntity::getRoleId, (Object) roleIds);
+        }
         return baseSysRoleDepartmentMapper
-                .selectListByQuery(QueryWrapper.create().in(BaseSysRoleDepartmentEntity::getRoleId, (Object) roleIds,
-                        roleIds != null && !CollUtil.toList(roleIds).contains(1L)))
+                .selectListByQuery(queryWrapper)
                 .stream().map(BaseSysRoleDepartmentEntity::getDepartmentId).toArray(Long[]::new);
     }
 

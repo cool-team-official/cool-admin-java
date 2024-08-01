@@ -1,10 +1,9 @@
 package com.cool.modules.base.entity.sys;
 
 import com.cool.core.base.BaseEntity;
-import com.tangzc.autotable.annotation.Index;
-
-import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
 import com.mybatisflex.annotation.Table;
+import com.tangzc.autotable.annotation.Index;
+import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,7 +21,7 @@ public class BaseSysParamEntity extends BaseEntity<BaseSysParamEntity> {
     @ColumnDefine(comment = "数据", type = "text")
     private String data;
 
-    @ColumnDefine(comment = "数据类型 0:字符串 1:数组 2:键值对", defaultValue = "0", type = "tinyint")
+    @ColumnDefine(comment = "数据类型 0:字符串 1:数组 2:键值对", defaultValue = "0")
     private Integer dataType;
 
     @ColumnDefine(comment = "备注")

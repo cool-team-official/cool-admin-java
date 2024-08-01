@@ -5,7 +5,6 @@ import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.codec.Base64Encoder;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IoUtil;
-import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import com.cool.core.config.PluginJson;
@@ -47,9 +46,6 @@ public class CoolPluginService {
     @Value("${cool.plugin.path}")
     private String pluginPath;
 
-    @Value("${cool.plugin.toDb:false}")
-    private Boolean toDb;
-
     public void init() {
         List<PluginInfoEntity> list = pluginInfoService
             .list(QueryWrapper
@@ -71,12 +67,8 @@ public class CoolPluginService {
         File file = new File(pluginJson.getJarPath());
         // 检查文件是否存在
         if (!file.exists()) {
-            PluginInfoEntity pluginInfoEntity = pluginInfoService.getById(entity.getId());
-            if (ObjUtil.isEmpty(pluginInfoEntity.getJarFile())) {
-                log.warn("插件文件不存在，请重新安装!");
-                return;
-            }
-            FileUtil.writeBytes(pluginInfoEntity.getJarFile(), file);
+            log.warn("插件文件不存在，请重新安装!");
+            return;
         }
         file = new File(pluginJson.getJarPath());
         if (file.exists()) {
@@ -189,10 +181,6 @@ public class CoolPluginService {
         setLogoOrReadme(pluginJson, pluginInfo);
         pluginInfo.setKey(pluginJson.getKey());
         pluginInfo.setPluginJson(pluginJson);
-        if (BooleanUtil.isTrue(toDb)) {
-            // 转二进制
-            pluginInfo.setJarFile(FileUtil.readBytes(jarFile));
-        }
         if (force) {
             // 判断是否有同名插件， 有将其关闭
             closeSameNamePlugin(pluginJson);

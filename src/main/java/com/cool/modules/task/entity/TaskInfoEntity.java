@@ -2,13 +2,11 @@ package com.cool.modules.task.entity;
 
 import com.cool.core.base.BaseEntity;
 import com.mybatisflex.annotation.Column;
-
-import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
 import com.mybatisflex.annotation.Table;
+import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
+import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Date;
 
 @Getter
 @Setter
@@ -41,7 +39,7 @@ public class TaskInfoEntity extends BaseEntity<TaskInfoEntity> {
     @ColumnDefine(comment = "状态 0:cron 1：时间间隔", defaultValue = "0")
     private Integer taskType;
 
-    @ColumnDefine(comment = "状态 0:系统 1：用户", defaultValue = "0", type = "tinyint")
+    @ColumnDefine(comment = "状态 0:系统 1：用户", defaultValue = "0")
     private Integer type;
 
     @ColumnDefine(comment = "任务数据")

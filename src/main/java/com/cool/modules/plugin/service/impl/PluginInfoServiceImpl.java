@@ -3,7 +3,6 @@ package com.cool.modules.plugin.service.impl;
 import static com.cool.modules.plugin.entity.table.PluginInfoEntityTableDef.PLUGIN_INFO_ENTITY;
 
 import com.cool.core.base.BaseServiceImpl;
-import com.cool.core.util.EntityUtils;
 import com.cool.modules.plugin.entity.PluginInfoEntity;
 import com.cool.modules.plugin.mapper.PluginInfoMapper;
 import com.cool.modules.plugin.service.PluginInfoService;
@@ -18,7 +17,7 @@ public class PluginInfoServiceImpl extends BaseServiceImpl<PluginInfoMapper, Plu
         implements PluginInfoService {
 
     /**
-     * 通过key获取插件信息,不带jar二进制
+     * 通过key获取插件信息
      */
     @Override
     public PluginInfoEntity getByKey(String key) {
@@ -28,7 +27,7 @@ public class PluginInfoServiceImpl extends BaseServiceImpl<PluginInfoMapper, Plu
     }
 
     /**
-     * 通过hook获取插件信息,不带jar二进制
+     * 通过hook获取插件信息
      */
     @Override
     public PluginInfoEntity getPluginInfoEntityByHook(String hook) {
@@ -38,7 +37,7 @@ public class PluginInfoServiceImpl extends BaseServiceImpl<PluginInfoMapper, Plu
     }
 
     /**
-     * 通过id获取插件信息,不带jar二进制
+     * 通过id获取插件信息
      */
     @Override
     public PluginInfoEntity getPluginInfoEntityById(Long id) {
@@ -47,9 +46,9 @@ public class PluginInfoServiceImpl extends BaseServiceImpl<PluginInfoMapper, Plu
     }
 
     /**
-     * 获取查询对象，排除掉 jar二进制
+     * 获取查询对象
      */
     private QueryWrapper getPluginInfoEntityQueryWrapper() {
-        return QueryWrapper.create().select(EntityUtils.getFieldNamesWithSuperClass(PLUGIN_INFO_ENTITY.DEFAULT_COLUMNS, PLUGIN_INFO_ENTITY.JAR_FILE.getName()));
+        return QueryWrapper.create();
     }
 }
