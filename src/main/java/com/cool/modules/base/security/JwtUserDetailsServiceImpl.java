@@ -42,7 +42,7 @@ public class JwtUserDetailsServiceImpl implements UserDetailsService {
             authority.add(new SimpleGrantedAuthority(perm));
         }
         Long[] departmentIds = baseSysPermsService.getDepartmentIdsByRoleIds(sysUserEntity.getId());
-        JwtUser jwtUser = new JwtUser(sysUserEntity.getUsername(), sysUserEntity.getPassword(),
+        JwtUser jwtUser = new JwtUser(sysUserEntity.getId(), sysUserEntity.getUsername(), sysUserEntity.getPassword(),
             authority,
             sysUserEntity.getStatus() == 1);
         Long[] roleIds = baseSysPermsService.getRoles(sysUserEntity);

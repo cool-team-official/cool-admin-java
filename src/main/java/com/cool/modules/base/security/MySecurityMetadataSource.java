@@ -1,5 +1,8 @@
 package com.cool.modules.base.security;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.cool.core.enums.UserTypeEnum;
+import com.cool.core.util.CoolSecurityUtil;
 import com.cool.modules.base.service.sys.BaseSysPermsService;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,13 +56,17 @@ public class MySecurityMetadataSource implements FilterInvocationSecurityMetadat
      */
     @Override
     public Collection<ConfigAttribute> getAttributes(Object o) throws IllegalArgumentException {
+        UserTypeEnum userTypeEnum = CoolSecurityUtil.getCurrentUserType();
+        if (ObjectUtil.equal(userTypeEnum, UserTypeEnum.APP)) {
+            // app用户不需要权限拦截
+            return null;
+        }
         if (map == null) {
             loadResourceDefine();
         }
         // Object中包含用户请求request
         String url = ((FilterInvocation) o).getRequestUrl();
         return map.get(url.replace("/admin/", "").split("[?]")[0]);
-
     }
 
     @Override

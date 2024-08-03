@@ -9,5 +9,5 @@ public interface UserInfoService extends BaseService<UserInfoEntity> {
      * @param userId
      * @return
      */
-    Object person(Long userId);
+    UserInfoEntity person(Long userId);
 }

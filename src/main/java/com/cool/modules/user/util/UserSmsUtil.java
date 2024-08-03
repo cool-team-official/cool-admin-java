@@ -3,16 +3,16 @@ package com.cool.modules.user.util;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.cool.core.cache.CoolCache;
+import com.cool.core.exception.CoolPreconditions;
 import com.cool.core.plugin.service.CoolPluginService;
 import com.cool.core.util.CoolPluginInvokers;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 /**
  * UserSmsUtil - 用户短信工具类
@@ -23,6 +23,13 @@ import java.util.Map;
 @Component
 public class UserSmsUtil {
 
+    /**
+     * 短信发送场景枚举
+     */
+    public enum SendSceneEnum {
+        login, // 登录
+    }
+
     private final CoolPluginService coolPluginService;
 
     private final CoolCache coolCache;
@@ -31,13 +38,12 @@ public class UserSmsUtil {
      * 发送短信验证码
      *
      * @param phone
-     * @param code
      */
-    void sendVerifyCode(String phone, String code) {
+    public void sendVerifyCode(String phone, SendSceneEnum sendSceneEnum) {
         // 随机生成4位验证码
         String verifyCode = RandomUtil.randomNumbers(4);
         send(phone, verifyCode);
-        coolCache.set("sms:" + phone, verifyCode, 60 * 10);
+        coolCache.set(sendSceneEnum.name() + "_sms:" + phone, verifyCode, 60 * 10);
     }
 
     /**
@@ -46,11 +52,16 @@ public class UserSmsUtil {
      * @param code
      * @return
      */
-    boolean checkVerifyCode(String phone, String code) {
-        String cacheCode = coolCache.get("sms:" + phone, String.class);
-        return StrUtil.isNotEmpty(code) && code.equals(cacheCode);
+    public void checkVerifyCode(String phone, String code, SendSceneEnum sendSceneEnum) {
+        String key = sendSceneEnum.name() + "_sms:" + phone;
+        String cacheCode = coolCache.get(key, String.class);
+        boolean flag = StrUtil.isNotEmpty(code) && code.equals(cacheCode);
+        if (flag) {
+            // 删除验证码
+            coolCache.del(key);
+        }
+        CoolPreconditions.check(!flag, "验证码错误");
     }
-
 
     /**
      * 发送短信
@@ -58,15 +69,16 @@ public class UserSmsUtil {
      * @param phone
      * @param code
      */
-    void send(String phone, String code) {
+    public void send(String phone, String code) {
         List<String> phones = new ArrayList<>();
-        phones.add("xxx");
+        phones.add(phone);
 
         Map<String, Object> params = new HashMap<>();
         params.put("code", code);
         // 插件key sms-tx、sms-ali，哪个实例存在就调用哪个
         if (coolPluginService.getInstance("sms-tx") != null) {
             // 调用腾讯短信插件
+            CoolPluginInvokers.invoke("sms-tx", "send", phones, params);
         } else if (coolPluginService.getInstance("sms-ali") != null) {
             // 调用阿里短信插件
             CoolPluginInvokers.invoke("sms-ali", "send", phones, params);

@@ -1,29 +1,45 @@
 package com.cool.core.security.jwt;
 
+import com.cool.core.enums.UserTypeEnum;
+import java.util.Collection;
+import java.util.List;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.List;
-
 /**
- * 用户信息
+ * 后台用户信息
  */
 @Data
 public class JwtUser implements UserDetails {
 
-    public JwtUser(String username, String password, List<GrantedAuthority> perms, Boolean status) {
+    /******
+     * 后台用户
+     * ********/
+    private Long userId;
+    private String username;
+    private String password;
+    private Boolean status;
+    private UserTypeEnum userTypeEnum;
+    private List<GrantedAuthority> perms;
+    public JwtUser(Long userId, String username, String password, List<GrantedAuthority> perms, Boolean status) {
+        this.userId = userId;
         this.username = username;
         this.password = password;
         this.perms = perms;
         this.status = status;
+        this.userTypeEnum = UserTypeEnum.ADMIN;
     }
 
-    private String username;
-    private String password;
-    private Boolean status;
-    private List<GrantedAuthority> perms;
+    /******
+     * app用户
+     * ********/
+    public JwtUser(Long userId, List<GrantedAuthority> perms, Boolean status) {
+        this.userId = userId;
+        this.perms = perms;
+        this.status = status;
+        this.userTypeEnum = UserTypeEnum.APP;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

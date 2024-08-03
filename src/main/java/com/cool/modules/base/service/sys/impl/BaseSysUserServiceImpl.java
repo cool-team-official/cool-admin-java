@@ -15,18 +15,19 @@ import com.cool.core.base.BaseServiceImpl;
 import com.cool.core.base.ModifyEnum;
 import com.cool.core.cache.CoolCache;
 import com.cool.core.exception.CoolPreconditions;
+import com.cool.core.util.CoolSecurityUtil;
+import com.cool.core.util.DatabaseDialectUtils;
 import com.cool.modules.base.entity.sys.BaseSysDepartmentEntity;
 import com.cool.modules.base.entity.sys.BaseSysUserEntity;
 import com.cool.modules.base.mapper.sys.BaseSysDepartmentMapper;
 import com.cool.modules.base.mapper.sys.BaseSysUserMapper;
-import com.cool.modules.base.security.CoolSecurityUtil;
 import com.cool.modules.base.service.sys.BaseSysPermsService;
 import com.cool.modules.base.service.sys.BaseSysUserService;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.update.UpdateChain;
+import com.tangzc.autotable.core.constants.DatabaseDialect;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -39,30 +40,27 @@ public class BaseSysUserServiceImpl extends BaseServiceImpl<BaseSysUserMapper, B
 
     final private CoolCache coolCache;
 
-    final private CoolSecurityUtil coolSecurityUtil;
-
     final private BaseSysPermsService baseSysPermsService;
 
     final private BaseSysDepartmentMapper baseSysDepartmentMapper;
-
-    @Value("${spring.datasource.url}")
-    private String datasourceUrl;
 
     @Override
     public Object page(JSONObject requestParams, Page<BaseSysUserEntity> page, QueryWrapper qw) {
         String keyWord = requestParams.getStr("keyWord");
         Integer status = requestParams.getInt("status");
         Long[] departmentIds = requestParams.get("departmentIds", Long[].class);
-        JSONObject tokenInfo = coolSecurityUtil.userInfo(requestParams);
+        JSONObject tokenInfo = CoolSecurityUtil.getAdminUserInfo(requestParams);
         // 用户的部门权限
         Long[] permsDepartmentArr = coolCache.get("admin:department:" + tokenInfo.get("userId"),
             Long[].class);
-        // TODO 临时兼容 postgresql
-        if (datasourceUrl.contains("postgresql")) {
-            qw.select(BASE_SYS_USER_ENTITY.ALL_COLUMNS
-//                ,
-//                groupConcat(BASE_SYS_ROLE_ENTITY.NAME).as("roleName"),
-//                BASE_SYS_DEPARTMENT_ENTITY.NAME.as("departmentName")
+        String databaseDialect = DatabaseDialectUtils.getDatabaseDialect();
+        if (databaseDialect.equals(DatabaseDialect.PostgreSQL)) {
+            qw.select("base_sys_user.id","base_sys_user.create_time","base_sys_user.department_id",
+                "base_sys_user.email","base_sys_user.head_img","base_sys_user.name","base_sys_user.nick_name",
+                "base_sys_user.phone","base_sys_user.remark","base_sys_user.status",
+                "base_sys_user.update_time","base_sys_user.username",
+                "string_agg(base_sys_role.name, ', ') AS roleName",
+                "base_sys_department.name AS departmentName"
             );
         } else {
             qw.select(BASE_SYS_USER_ENTITY.ALL_COLUMNS,
@@ -94,9 +92,16 @@ public class BaseSysUserServiceImpl extends BaseServiceImpl<BaseSysUserMapper, B
         qw.and(BASE_SYS_USER_ENTITY.DEPARTMENT_ID.in(
             permsDepartmentArr == null || permsDepartmentArr.length == 0 ? new Long[]{null}
                 : permsDepartmentArr,
-            !coolSecurityUtil.username().equals("admin")));
-
-        qw.groupBy(BASE_SYS_USER_ENTITY.ID);
+            !CoolSecurityUtil.getAdminUsername().equals("admin")));
+        if (databaseDialect.equals(DatabaseDialect.PostgreSQL)) {
+            qw.groupBy("base_sys_user.id","base_sys_user.create_time","base_sys_user.department_id",
+                "base_sys_user.email","base_sys_user.head_img","base_sys_user.name","base_sys_user.nick_name",
+                "base_sys_user.phone","base_sys_user.remark","base_sys_user.status",
+                "base_sys_user.update_time","base_sys_user.username",
+                "base_sys_department.name");
+        } else {
+            qw.groupBy(BASE_SYS_USER_ENTITY.ID);
+        }
         return mapper.paginate(page, qw);
     }
 
@@ -148,7 +153,7 @@ public class BaseSysUserServiceImpl extends BaseServiceImpl<BaseSysUserMapper, B
         }
         // 被禁用
         if (entity.getStatus() == 0) {
-            coolSecurityUtil.logout(entity);
+            CoolSecurityUtil.adminLogout(entity);
         }
         return super.update(requestParams, entity);
     }

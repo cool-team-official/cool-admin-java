@@ -92,6 +92,7 @@ public class AdminBaseCommController {
         return R.ok();
     }
 
+    @TokenIgnore
     @Operation(summary = "编程")
     @GetMapping("/program")
     public R program() {

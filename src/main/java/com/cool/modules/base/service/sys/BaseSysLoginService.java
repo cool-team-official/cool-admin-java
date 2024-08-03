@@ -17,6 +17,11 @@ public interface BaseSysLoginService {
     Object captcha(String type, Integer width, Integer height);
 
     /**
+     * 校验验证码
+     */
+    void captchaCheck(String captchaId, String code);
+
+    /**
      * 登录
      *
      * @param baseSysLoginDto 登录必要信息

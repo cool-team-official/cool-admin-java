@@ -11,10 +11,10 @@ import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.cool.core.cache.CoolCache;
+import com.cool.core.util.CoolSecurityUtil;
 import com.cool.core.util.SpringContextUtils;
 import com.cool.modules.base.entity.sys.*;
 import com.cool.modules.base.mapper.sys.*;
-import com.cool.modules.base.security.CoolSecurityUtil;
 import com.cool.modules.base.service.sys.BaseSysPermsService;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.row.Row;
@@ -41,11 +41,9 @@ public class BaseSysPermsServiceImpl implements BaseSysPermsService {
 
     final private BaseSysDepartmentMapper baseSysDepartmentMapper;
 
-    final private CoolSecurityUtil coolSecurityUtil;
-
     @Override
     public Long[] loginDepartmentIds() {
-        String username = coolSecurityUtil.username();
+        String username = CoolSecurityUtil.getAdminUsername();
         if (username.equals("admin")) {
             return baseSysDepartmentMapper.selectAll().stream().map(BaseSysDepartmentEntity::getId)
                     .toArray(Long[]::new);
@@ -64,8 +62,11 @@ public class BaseSysPermsServiceImpl implements BaseSysPermsService {
     }
 
     private Long[] getLongs(Long[] roleIds) {
+        if (ObjectUtil.isEmpty(roleIds)) {
+            return new Long[]{};
+        }
         QueryWrapper queryWrapper = QueryWrapper.create();
-        if (roleIds != null && !CollUtil.toList(roleIds).contains(1L)) {
+        if (!CollUtil.toList(roleIds).contains(1L)) {
             queryWrapper.in(BaseSysRoleDepartmentEntity::getRoleId, (Object) roleIds);
         }
         return baseSysRoleDepartmentMapper
@@ -217,7 +218,7 @@ public class BaseSysPermsServiceImpl implements BaseSysPermsService {
             SpringContextUtils.getBean(UserDetailsService.class).loadUserByUsername(baseSysUserEntity.getUsername());
         }
         if (baseSysUserEntity != null && baseSysUserEntity.getStatus() == 0) {
-            coolSecurityUtil.logout(baseSysUserEntity.getId(), baseSysUserEntity.getUsername());
+            CoolSecurityUtil.adminLogout(baseSysUserEntity.getId(), baseSysUserEntity.getUsername());
         }
     }
 

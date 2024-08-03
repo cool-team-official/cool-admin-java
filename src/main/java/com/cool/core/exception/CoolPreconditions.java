@@ -49,6 +49,10 @@ public class CoolPreconditions {
         check(ObjectUtil.isEmpty(object), formatMessage(message, arguments));
     }
 
+    public static void checkEmpty(Object object) {
+        check(ObjectUtil.isEmpty(object), "参数不能为空");
+    }
+
     private static String formatMessage(String messagePattern, Object... arguments) {
         StringBuilder sb = new StringBuilder();
         int argumentIndex = 0;

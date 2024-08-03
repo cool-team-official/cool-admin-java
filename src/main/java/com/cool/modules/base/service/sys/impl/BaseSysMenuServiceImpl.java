@@ -9,10 +9,10 @@ import com.cool.core.base.BaseServiceImpl;
 import com.cool.core.base.ModifyEnum;
 import com.cool.core.eps.CoolEps;
 import com.cool.core.util.CompilerUtils;
+import com.cool.core.util.CoolSecurityUtil;
 import com.cool.core.util.PathUtils;
 import com.cool.modules.base.entity.sys.BaseSysMenuEntity;
 import com.cool.modules.base.mapper.sys.BaseSysMenuMapper;
-import com.cool.modules.base.security.CoolSecurityUtil;
 import com.cool.modules.base.service.sys.BaseSysMenuService;
 import com.cool.modules.base.service.sys.BaseSysPermsService;
 import com.mybatisflex.core.query.QueryWrapper;
@@ -33,13 +33,11 @@ public class BaseSysMenuServiceImpl extends BaseServiceImpl<BaseSysMenuMapper, B
 
     final private BaseSysPermsService baseSysPermsService;
 
-    final private CoolSecurityUtil coolSecurityUtil;
-
     final private CoolEps coolEps;
 
     @Override
     public Object list(JSONObject requestParams, QueryWrapper queryWrapper) {
-        List<BaseSysMenuEntity> list = baseSysPermsService.getMenus(coolSecurityUtil.username());
+        List<BaseSysMenuEntity> list = baseSysPermsService.getMenus(CoolSecurityUtil.getAdminUsername());
         list.forEach(e -> {
             List<BaseSysMenuEntity> parent = list.stream()
                 .filter(sysMenuEntity -> e.getParentId() != null && e.getParentId()

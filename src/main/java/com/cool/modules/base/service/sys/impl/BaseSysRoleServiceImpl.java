@@ -5,20 +5,19 @@ import cn.hutool.json.JSONObject;
 import com.cool.core.base.BaseServiceImpl;
 import com.cool.core.base.ModifyEnum;
 import com.cool.core.exception.CoolException;
+import com.cool.core.util.CoolSecurityUtil;
 import com.cool.modules.base.entity.sys.BaseSysRoleDepartmentEntity;
 import com.cool.modules.base.entity.sys.BaseSysRoleEntity;
 import com.cool.modules.base.entity.sys.BaseSysRoleMenuEntity;
 import com.cool.modules.base.mapper.sys.BaseSysRoleDepartmentMapper;
 import com.cool.modules.base.mapper.sys.BaseSysRoleMapper;
 import com.cool.modules.base.mapper.sys.BaseSysRoleMenuMapper;
-import com.cool.modules.base.security.CoolSecurityUtil;
 import com.cool.modules.base.service.sys.BaseSysPermsService;
 import com.cool.modules.base.service.sys.BaseSysRoleService;
 import com.mybatisflex.core.query.QueryWrapper;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * 系统角色
@@ -36,15 +35,13 @@ public class BaseSysRoleServiceImpl extends BaseServiceImpl<BaseSysRoleMapper, B
 
     final private BaseSysPermsService baseSysPermsService;
 
-    final private CoolSecurityUtil coolSecurityUtil;
-
     @Override
     public Object add(JSONObject requestParams, BaseSysRoleEntity entity) {
         BaseSysRoleEntity checkLabel = getOne(QueryWrapper.create().eq(BaseSysRoleEntity::getLabel, entity.getLabel()));
         if (checkLabel != null) {
             throw new CoolException("标识已存在");
         }
-        entity.setUserId((coolSecurityUtil.userInfo(requestParams).getLong("userId")));
+        entity.setUserId((CoolSecurityUtil.getAdminUserInfo(requestParams).getLong("userId")));
         return super.add(requestParams, entity);
     }
 
@@ -83,10 +80,11 @@ public class BaseSysRoleServiceImpl extends BaseServiceImpl<BaseSysRoleMapper, B
     @Override
     public Object list(JSONObject requestParams, QueryWrapper queryWrapper) {
         return baseSysRoleMapper.selectListByQuery(queryWrapper.ne(BaseSysRoleEntity::getId, 1L).and(qw -> {
-            qw.eq(BaseSysRoleEntity::getUserId, coolSecurityUtil.userInfo(requestParams).get("userId")).or(w -> {
+            JSONObject object = CoolSecurityUtil.getAdminUserInfo(requestParams);
+            qw.eq(BaseSysRoleEntity::getUserId, object.get("userId")).or(w -> {
                 w.in(BaseSysRoleEntity::getId,
-                        (Object) coolSecurityUtil.userInfo(requestParams).get("roleIds", Long[].class));
+                        (Object) object.get("roleIds", Long[].class));
             });
-        }, !coolSecurityUtil.username().equals("admin")));
+        }, !CoolSecurityUtil.getAdminUsername().equals("admin")));
     }
 }

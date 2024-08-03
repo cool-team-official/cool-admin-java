@@ -28,4 +28,30 @@ public interface UserLoginService {
      * @return 新的token
      */
     Object refreshToken(String refreshToken);
+    /**
+     * 小程序登录
+     */
+    Object mini(String code, String encryptedData, String iv);
+    /**
+     * 公众号登录
+     */
+    Object mp(String code);
+    /**
+     * 微信APP授权登录
+     */
+    Object wxApp(String code);
+
+    /**
+     * 一键手机号登录
+     */
+    Object uniPhone(String accessToken, String openid, String appId);
+    /**
+     * 绑定小程序手机号
+     */
+    Object miniPhone(String code, String encryptedData, String iv);
+
+    /**
+     * 密码登录
+     */
+    Object password(String phone, String password);
 }

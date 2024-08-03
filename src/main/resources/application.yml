@@ -64,7 +64,7 @@ spring:
             useProperties: false
           threadPool:
             class: org.quartz.simpl.SimpleThreadPool
-            threadCount: 1000
+            threadCount: 5
             threadPriority: 9
             threadsInheritContextClassLoaderOfInitializingThread: true
 
@@ -77,7 +77,6 @@ ignored:
     - /actuator/**
     - /download/**
     - /static/**
-    - /app/**
     - /favicon.ico
     - /v3/api-docs/**
     - /swagger
@@ -88,6 +87,11 @@ ignored:
     - /admin/base/open/**
   # 忽略记录请求日志url
   logUrls:
+    - /
+    - /app/**
+    - /css/*
+    - /js/*
+    - /favicon.ico
 # 文档
 springdoc:
   api-docs:

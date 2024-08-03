@@ -1,14 +1,13 @@
 package com.cool.core.security;
 
 import com.cool.core.annotation.TokenIgnore;
-import com.cool.modules.base.security.JwtAuthenticationTokenFilter;
+import com.cool.core.enums.UserTypeEnum;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -51,7 +50,7 @@ public class JwtSecurityConfig {
     final private RequestMappingHandlerMapping requestMappingHandlerMapping;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, ApplicationContext applicationContext) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         // 动态获取忽略的URL
         configureIgnoredUrls();
 
@@ -62,6 +61,7 @@ public class JwtSecurityConfig {
                                             ignoredUrlsProperties.getAdminAuthUrls().toArray(String[]::new))
                                     .permitAll();
                             conf.requestMatchers("/admin/**").authenticated();
+                            conf.requestMatchers("/app/**").hasRole(UserTypeEnum.APP.name());
                         })
                 .headers(config -> config.frameOptions(FrameOptionsConfig::disable))
                 // 允许网页iframe

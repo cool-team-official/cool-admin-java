@@ -6,7 +6,7 @@ import cn.hutool.json.JSONObject;
 import com.cool.core.annotation.IgnoreRecycleData;
 import com.cool.core.base.BaseController;
 import com.cool.core.base.BaseService;
-import com.cool.modules.base.security.CoolSecurityUtil;
+import com.cool.core.util.CoolSecurityUtil;
 import com.cool.modules.recycle.entity.RecycleDataEntity;
 import com.cool.modules.recycle.service.RecycleDataService;
 import com.mybatisflex.core.query.QueryWrapper;
@@ -34,8 +34,6 @@ import org.springframework.stereotype.Component;
 public class DeleteAspect {
 
     final private RecycleDataService recycleDataService;
-
-    final private CoolSecurityUtil coolSecurityUtil;
 
     @Around(value = "execution(* com.cool.core.base.BaseController.delete*(..)) && args(request, params, requestParams)", argNames = "joinPoint,request,params,requestParams")
     public Object aroundAdvice(ProceedingJoinPoint joinPoint, HttpServletRequest request,
@@ -71,10 +69,10 @@ public class DeleteAspect {
         if (ObjUtil.isNotEmpty(list)) {
             RecycleDataEntity recycleDataEntity = new RecycleDataEntity();
             recycleDataEntity.setUrl(request.getRequestURI());
-            recycleDataEntity.setUserName(coolSecurityUtil.username());
+            recycleDataEntity.setUserName(CoolSecurityUtil.getAdminUsername());
             recycleDataEntity
                 .setUserId(Long.parseLong(
-                    String.valueOf(coolSecurityUtil.userInfo(requestParams).get("userId"))));
+                    String.valueOf(CoolSecurityUtil.getAdminUserInfo(requestParams).get("userId"))));
             recycleDataEntity.setParams(params);
             recycleDataEntity.setData(list);
             recycleDataEntity.setParams(params);

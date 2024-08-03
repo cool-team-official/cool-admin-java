@@ -7,13 +7,13 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.cool.core.base.BaseServiceImpl;
 import com.cool.core.security.IgnoredUrlsProperties;
+import com.cool.core.util.CoolSecurityUtil;
 import com.cool.core.util.IPUtils;
 import com.cool.modules.base.entity.sys.BaseSysLogEntity;
 import com.cool.modules.base.entity.sys.BaseSysUserEntity;
 import com.cool.modules.base.entity.sys.table.BaseSysLogEntityTableDef;
 import com.cool.modules.base.entity.sys.table.BaseSysUserEntityTableDef;
 import com.cool.modules.base.mapper.sys.BaseSysLogMapper;
-import com.cool.modules.base.security.CoolSecurityUtil;
 import com.cool.modules.base.service.sys.BaseSysConfService;
 import com.cool.modules.base.service.sys.BaseSysLogService;
 import com.mybatisflex.core.paginate.Page;
@@ -34,8 +34,6 @@ public class BaseSysLogServiceImpl extends BaseServiceImpl<BaseSysLogMapper, Bas
 	implements BaseSysLogService {
 
 	private final BaseSysConfService baseSysConfService;
-
-	private final CoolSecurityUtil coolSecurityUtil;
 
 	private final IgnoredUrlsProperties ignoredUrlsProperties;
 
@@ -78,7 +76,7 @@ public class BaseSysLogServiceImpl extends BaseServiceImpl<BaseSysLogMapper, Bas
 			return;
 		}
 		String ipAddr = ipUtils.getIpAddr(request);
-		JSONObject userInfo = coolSecurityUtil.userInfo(requestParams);
+		JSONObject userInfo = CoolSecurityUtil.getAdminUserInfo(requestParams);
 
 		Long userId = null;
 		if (userInfo != null) {

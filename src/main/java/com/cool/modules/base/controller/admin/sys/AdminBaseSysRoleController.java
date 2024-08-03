@@ -1,15 +1,17 @@
 package com.cool.modules.base.controller.admin.sys;
 
+import static com.cool.modules.base.entity.sys.table.BaseSysRoleEntityTableDef.BASE_SYS_ROLE_ENTITY;
+
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.cool.core.annotation.CoolRestController;
 import com.cool.core.base.BaseController;
 import com.cool.modules.base.entity.sys.BaseSysRoleEntity;
-import static com.cool.modules.base.entity.sys.table.BaseSysRoleEntityTableDef.BASE_SYS_ROLE_ENTITY;
 import com.cool.modules.base.service.sys.BaseSysRoleService;
 import com.mybatisflex.core.query.QueryWrapper;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
 import jakarta.servlet.http.HttpServletRequest;
+
 /**
  * 系统角色
  */
@@ -24,7 +26,10 @@ public class AdminBaseSysRoleController extends BaseController<BaseSysRoleServic
 
         setPageOption(createOp().keyWordLikeFields(BASE_SYS_ROLE_ENTITY.NAME, BASE_SYS_ROLE_ENTITY.LABEL).queryWrapper(QueryWrapper.create().and(qw -> {
             qw.eq(BASE_SYS_ROLE_ENTITY.USER_ID.getName(), tokenInfo.get("userId")).or(w -> {
-                w.in(BASE_SYS_ROLE_ENTITY.ID.getName(), tokenInfo.get("roleIds"));
+                Object o = tokenInfo.get("roleIds");
+                if (o != null) {
+                    w.in(BASE_SYS_ROLE_ENTITY.ID.getName(), new JSONArray(o).toList(Long.class));
+                }
             });
         }, !isAdmin).and(BASE_SYS_ROLE_ENTITY.LABEL.ne("admin"))));
     }

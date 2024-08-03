@@ -2,11 +2,11 @@ package com.cool.modules.base.service.sys.impl;
 
 import cn.hutool.json.JSONObject;
 import com.cool.core.base.BaseServiceImpl;
+import com.cool.core.util.CoolSecurityUtil;
 import com.cool.modules.base.entity.sys.BaseSysDepartmentEntity;
 import com.cool.modules.base.entity.sys.BaseSysUserEntity;
 import com.cool.modules.base.mapper.sys.BaseSysDepartmentMapper;
 import com.cool.modules.base.mapper.sys.BaseSysUserMapper;
-import com.cool.modules.base.security.CoolSecurityUtil;
 import com.cool.modules.base.service.sys.BaseSysDepartmentService;
 import com.cool.modules.base.service.sys.BaseSysPermsService;
 import com.mybatisflex.core.query.QueryWrapper;
@@ -27,8 +27,6 @@ public class BaseSysDepartmentServiceImpl extends
 
     final private BaseSysUserMapper baseSysUserMapper;
 
-    final private CoolSecurityUtil coolSecurityUtil;
-
     final private BaseSysPermsService baseSysPermsService;
 
     @Override
@@ -42,7 +40,7 @@ public class BaseSysDepartmentServiceImpl extends
 
     @Override
     public List<BaseSysDepartmentEntity> list(JSONObject requestParams, QueryWrapper queryWrapper) {
-        String username = coolSecurityUtil.username();
+        String username = CoolSecurityUtil.getAdminUsername();
         Long[] loginDepartmentIds = baseSysPermsService.loginDepartmentIds();
         if (loginDepartmentIds != null && loginDepartmentIds.length == 0) {
             return new ArrayList<>();

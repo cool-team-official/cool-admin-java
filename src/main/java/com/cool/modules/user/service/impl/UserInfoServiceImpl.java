@@ -11,7 +11,7 @@ public class UserInfoServiceImpl extends BaseServiceImpl<UserInfoMapper, UserInf
     UserInfoService {
 
     @Override
-    public Object person(Long userId) {
+    public UserInfoEntity person(Long userId) {
         UserInfoEntity info = mapper.selectOneById(userId);
         info.setPassword(null);
         return info;

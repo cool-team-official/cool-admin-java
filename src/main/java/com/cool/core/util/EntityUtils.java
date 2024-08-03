@@ -1,6 +1,9 @@
 package com.cool.core.util;
 
 import cn.hutool.core.annotation.AnnotationUtil;
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.Editor;
 import cn.hutool.core.util.ObjUtil;
 import com.mybatisflex.annotation.Table;
 import com.mybatisflex.core.query.QueryColumn;
@@ -9,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -76,6 +80,26 @@ public class EntityUtils {
         ArrayList<String> excludeList = new ArrayList<>(List.of(excludeNames));
         return Arrays.stream(queryColumns).toList().stream()
             .filter(o -> !excludeList.contains(o.getName())).toList();
+    }
+
+    /**
+     * 将bean的部分属性转换成map<br>
+     * 可选拷贝哪些属性值，默认是不忽略值为{@code null}的值的。
+     *
+     * @param bean       bean
+     * @param ignoreProperties 需要忽略拷贝的属性值，{@code null}或空表示拷贝所有值
+     * @return Map
+     * @since 5.8.0
+     */
+    public static Map<String, Object> toMap(Object bean, String... ignoreProperties) {
+        int mapSize = 16;
+        Editor<String> keyEditor = null;
+        final Set<String> propertiesSet = CollUtil.set(false, ignoreProperties);
+        propertiesSet.add("queryWrapper");
+        mapSize = ignoreProperties.length;
+        keyEditor = property -> !propertiesSet.contains(property) ? property : null;
+        // 指明了要复制的属性 所以不忽略null值
+        return BeanUtil.beanToMap(bean, new LinkedHashMap<>(mapSize, 1), false, keyEditor);
     }
 
     /**

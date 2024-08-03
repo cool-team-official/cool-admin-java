@@ -1,16 +1,16 @@
 package com.cool.core.security.jwt;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.jwt.JWT;
 import cn.hutool.jwt.JWTUtil;
 import cn.hutool.jwt.JWTValidator;
 import com.cool.core.config.CoolProperties;
+import com.cool.modules.base.service.sys.BaseSysConfService;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
-
-import com.cool.modules.base.service.sys.BaseSysConfService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +23,8 @@ public class JwtTokenUtil implements Serializable {
 
     final private CoolProperties coolProperties;
     final private BaseSysConfService baseSysConfService;
-    final String key = "JWT_SECRET";
+    final String tokenKey = "JWT_SECRET_TOKEN";
+    final String refreshTokenKey = "JWT_SECRET_REFRESH_TOKEN";
 
     public long getExpire() {
         return this.coolProperties.getToken().getExpire();
@@ -33,11 +34,20 @@ public class JwtTokenUtil implements Serializable {
         return this.coolProperties.getToken().getRefreshExpire();
     }
 
-    public String getSecret() {
-        String secret = baseSysConfService.getValueWithCache(key);
+    public String getTokenSecret() {
+        String secret = baseSysConfService.getValueWithCache(tokenKey);
         if (StrUtil.isBlank(secret)) {
             secret = StrUtil.uuid().replaceAll("-", "");
-            baseSysConfService.setValue(key, secret);
+            baseSysConfService.setValue(tokenKey, secret);
+        }
+        return secret;
+    }
+
+    public String getRefreshTokenSecret() {
+        String secret = baseSysConfService.getValueWithCache(refreshTokenKey);
+        if (StrUtil.isBlank(secret)) {
+            secret = StrUtil.uuid().replaceAll("-", "");
+            baseSysConfService.setValue(refreshTokenKey, secret);
         }
         return secret;
     }
@@ -51,7 +61,7 @@ public class JwtTokenUtil implements Serializable {
     public String generateToken(Map<String, Object> tokenInfo) {
         tokenInfo.put("isRefresh", false);
         Date expirationDate = new Date(System.currentTimeMillis() + getExpire() * 1000);
-        JWT jwt = JWT.create().setExpiresAt(expirationDate).setKey(getSecret().getBytes())
+        JWT jwt = JWT.create().setExpiresAt(expirationDate).setKey(getTokenSecret().getBytes())
                 .setPayload("created", new Date());
         tokenInfo.forEach(jwt::setPayload);
         return jwt.sign();
@@ -66,7 +76,7 @@ public class JwtTokenUtil implements Serializable {
     public String generateRefreshToken(Map<String, Object> tokenInfo) {
         tokenInfo.put("isRefresh", true);
         Date expirationDate = new Date(System.currentTimeMillis() + getRefreshExpire() * 1000);
-        JWT jwt = JWT.create().setExpiresAt(expirationDate).setKey(getSecret().getBytes())
+        JWT jwt = JWT.create().setExpiresAt(expirationDate).setKey(getRefreshTokenSecret().getBytes())
                 .setPayload("created", new Date());
         tokenInfo.forEach(jwt::setPayload);
         return jwt.sign();
@@ -116,8 +126,11 @@ public class JwtTokenUtil implements Serializable {
      * @return 是否有效
      */
     public Boolean validateToken(String token, String username) {
+        if (ObjectUtil.isEmpty(token)) {
+            return false;
+        }
         String tokenUsername = getUsernameFromToken(token);
-        String secret = getSecret();
+        String secret = getTokenSecret();
         boolean isValidSignature = JWTUtil.verify(token, secret.getBytes());
         return (tokenUsername.equals(username) && !isTokenExpired(token) && isValidSignature);
     }
@@ -128,7 +141,24 @@ public class JwtTokenUtil implements Serializable {
      * @return
      */
     public Boolean validateToken(String token) {
-        String secret = getSecret();
+        if (ObjectUtil.isEmpty(token)) {
+            return false;
+        }
+        String secret = getTokenSecret();
+        boolean isValidSignature = JWTUtil.verify(token, secret.getBytes());
+        return (!isTokenExpired(token) && isValidSignature);
+    }
+
+    /**
+     * 校验refresh token是否有效
+     * @param token
+     * @return
+     */
+    public Boolean validateRefreshToken(String token) {
+        if (ObjectUtil.isEmpty(token)) {
+            return false;
+        }
+        String secret = getRefreshTokenSecret();
         boolean isValidSignature = JWTUtil.verify(token, secret.getBytes());
         return (!isTokenExpired(token) && isValidSignature);
     }

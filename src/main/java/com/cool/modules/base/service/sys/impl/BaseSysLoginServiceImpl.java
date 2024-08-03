@@ -9,13 +9,13 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.jwt.JWT;
 import com.cool.core.cache.CoolCache;
-import com.cool.core.exception.CoolException;
+import com.cool.core.enums.UserTypeEnum;
 import com.cool.core.exception.CoolPreconditions;
 import com.cool.core.security.jwt.JwtTokenUtil;
+import com.cool.core.util.CoolSecurityUtil;
 import com.cool.modules.base.dto.sys.BaseSysLoginDto;
 import com.cool.modules.base.entity.sys.BaseSysUserEntity;
 import com.cool.modules.base.mapper.sys.BaseSysUserMapper;
-import com.cool.modules.base.security.CoolSecurityUtil;
 import com.cool.modules.base.service.sys.BaseSysLoginService;
 import com.cool.modules.base.service.sys.BaseSysPermsService;
 import com.mybatisflex.core.query.QueryWrapper;
@@ -36,8 +36,6 @@ public class BaseSysLoginServiceImpl implements BaseSysLoginService {
 	private final CoolCache coolCache;
 
 	private final AuthenticationManager authenticationManager;
-
-	private final CoolSecurityUtil coolSecurityUtil;
 
 	private final JwtTokenUtil jwtTokenUtil;
 
@@ -63,75 +61,72 @@ public class BaseSysLoginServiceImpl implements BaseSysLoginService {
 	}
 
 	@Override
+	public void captchaCheck(String captchaId, String code) {
+		String key = "verify:img:" + captchaId;
+		String verifyCode = coolCache.get(key,
+			String.class);
+		boolean flag = StrUtil.isNotEmpty(verifyCode)
+			&& verifyCode.equalsIgnoreCase(code);
+		if (!flag) {
+			coolCache.del(key);
+			CoolPreconditions.alwaysThrow("验证码不正确");
+		}
+	}
+
+	@Override
 	public Object login(BaseSysLoginDto baseSysLoginDto) {
 		// 1、检查验证码是否正确 2、执行登录操作
-		String verifyCode = coolCache.get("verify:img:" + baseSysLoginDto.getCaptchaId(),
-			String.class);
-		if (StrUtil.isNotEmpty(verifyCode)
-			&& verifyCode.equalsIgnoreCase(baseSysLoginDto.getVerifyCode())) {
-			UsernamePasswordAuthenticationToken upToken =
-				new UsernamePasswordAuthenticationToken(
-					baseSysLoginDto.getUsername(), baseSysLoginDto.getPassword());
-			Authentication authentication = authenticationManager.authenticate(upToken);
-			SecurityContextHolder.getContext().setAuthentication(authentication);
-			// 查询用户信息并生成token
-			BaseSysUserEntity sysUserEntity =
-				baseSysUserMapper.selectOneByQuery(
-					QueryWrapper.create()
-						.eq(BaseSysUserEntity::getUsername, baseSysLoginDto.getUsername()));
-			CoolPreconditions.check(
-				ObjectUtil.isEmpty(sysUserEntity) || sysUserEntity.getStatus() == 0, "用户已禁用");
-			Long[] roleIds = baseSysPermsService.getRoles(sysUserEntity);
-			Dict tokenInfo =
-				Dict.create()
-					.set("roleIds", roleIds)
-					.set("username", baseSysLoginDto.getUsername())
-					.set("userId", sysUserEntity.getId())
-					.set("passwordVersion", sysUserEntity.getPasswordV());
-			String token = jwtTokenUtil.generateToken(tokenInfo);
-			String refreshToken = jwtTokenUtil.generateRefreshToken(tokenInfo);
-			coolCache.del("verify:img:" + baseSysLoginDto.getCaptchaId());
-			return Dict.create()
-				.set("token", token)
-				.set("expire", jwtTokenUtil.getExpire())
-				.set("refreshToken", refreshToken)
-				.set("refreshExpire", jwtTokenUtil.getRefreshExpire());
-		} else {
-			coolCache.del("verify:img:" + baseSysLoginDto.getCaptchaId());
-			throw new CoolException("验证码不正确");
-		}
+		captchaCheck(baseSysLoginDto.getCaptchaId(), baseSysLoginDto.getVerifyCode());
+		UsernamePasswordAuthenticationToken upToken =
+			new UsernamePasswordAuthenticationToken(
+				baseSysLoginDto.getUsername(), baseSysLoginDto.getPassword());
+		Authentication authentication = authenticationManager.authenticate(upToken);
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		// 查询用户信息并生成token
+		BaseSysUserEntity baseSysUserEntity =
+			baseSysUserMapper.selectOneByQuery(
+				QueryWrapper.create()
+					.eq(BaseSysUserEntity::getUsername, baseSysLoginDto.getUsername()));
+		CoolPreconditions.check(
+			ObjectUtil.isEmpty(baseSysUserEntity) || baseSysUserEntity.getStatus() == 0, "用户已禁用");
+		Long[] roleIds = baseSysPermsService.getRoles(baseSysUserEntity);
+		coolCache.del("verify:img:" + baseSysLoginDto.getCaptchaId());
+		return generateToken(roleIds, baseSysUserEntity, null);
 	}
 
 	@Override
 	public void logout(Long adminUserId, String username) {
-		coolSecurityUtil.logout(adminUserId, username);
+		CoolSecurityUtil.adminLogout(adminUserId, username);
 	}
 
 	@Override
 	public Object refreshToken(String refreshToken) {
+		CoolPreconditions.check(!jwtTokenUtil.validateRefreshToken(refreshToken), "错误的refreshToken");
 		JWT jwt = jwtTokenUtil.getTokenInfo(refreshToken);
-		try {
-			CoolPreconditions.check(jwt == null || !(Boolean) jwt.getPayload("isRefresh"),
-				"错误的token");
+		CoolPreconditions.check(jwt == null || !(Boolean) jwt.getPayload("isRefresh"),
+			"错误的refreshToken");
+		BaseSysUserEntity baseSysUserEntity =
+			baseSysUserMapper.selectOneById(Convert.toLong(jwt.getPayload("userId")));
+		Long[] roleIds = baseSysPermsService.getRoles(baseSysUserEntity);
+		return generateToken(roleIds, baseSysUserEntity, refreshToken);
+	}
 
-			BaseSysUserEntity baseSysUserEntity =
-				baseSysUserMapper.selectOneById(Convert.toLong(jwt.getPayload("userId")));
-			Long[] roleIds = baseSysPermsService.getRoles(baseSysUserEntity);
-			Dict tokenInfo =
-				Dict.create()
-					.set("roleIds", roleIds)
-					.set("username", baseSysUserEntity.getUsername())
-					.set("userId", baseSysUserEntity.getId())
-					.set("passwordVersion", baseSysUserEntity.getPasswordV());
-			String token = jwtTokenUtil.generateToken(tokenInfo);
+	private Dict generateToken(Long[] roleIds, BaseSysUserEntity baseSysUserEntity, String refreshToken) {
+		Dict tokenInfo =
+			Dict.create()
+				.set("userType", UserTypeEnum.ADMIN.name())
+				.set("roleIds", roleIds)
+				.set("username", baseSysUserEntity.getUsername())
+				.set("userId", baseSysUserEntity.getId())
+				.set("passwordVersion", baseSysUserEntity.getPasswordV());
+		String token = jwtTokenUtil.generateToken(tokenInfo);
+		if (StrUtil.isEmpty(refreshToken)) {
 			refreshToken = jwtTokenUtil.generateRefreshToken(tokenInfo);
-			return Dict.create()
-				.set("token", token)
-				.set("expire", jwtTokenUtil.getExpire())
-				.set("refreshToken", refreshToken)
-				.set("refreshExpire", jwtTokenUtil.getRefreshExpire());
-		} catch (Exception e) {
-			throw new CoolException("错误的token", e);
 		}
+		return Dict.create()
+			.set("token", token)
+			.set("expire", jwtTokenUtil.getExpire())
+			.set("refreshToken", refreshToken)
+			.set("refreshExpire", jwtTokenUtil.getRefreshExpire());
 	}
 }
