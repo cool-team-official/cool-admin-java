@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.cool.core.base.BaseServiceImpl;
+import com.cool.core.config.LogProperties;
 import com.cool.core.security.IgnoredUrlsProperties;
 import com.cool.core.util.CoolSecurityUtil;
 import com.cool.core.util.IPUtils;
@@ -20,9 +21,8 @@ import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.concurrent.Executor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 /**
@@ -39,8 +39,10 @@ public class BaseSysLogServiceImpl extends BaseServiceImpl<BaseSysLogMapper, Bas
 
 	private final IPUtils ipUtils;
 
-	@Value("${cool.log.maxJsonLength:1024}")
-	private int maxJsonLength;
+	private final LogProperties logProperties;
+
+	private final Executor logTaskExecutor;
+
 	private static final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
 	@Override
@@ -76,22 +78,8 @@ public class BaseSysLogServiceImpl extends BaseServiceImpl<BaseSysLogMapper, Bas
 			return;
 		}
 		String ipAddr = ipUtils.getIpAddr(request);
-		JSONObject userInfo = CoolSecurityUtil.getAdminUserInfo(requestParams);
-
-		Long userId = null;
-		if (userInfo != null) {
-			userId = userInfo.getLong("userId");
-		}
-
-		JSONObject newJSONObject = JSONUtil.parseObj(JSONUtil.toJsonStr(requestParams));
-		newJSONObject.remove("tokenInfo");
-		newJSONObject.remove("refreshToken");
-		newJSONObject.remove("body");
-		if (newJSONObject.toString().getBytes().length > maxJsonLength) {
-			// 超过指定
-			newJSONObject.clear();
-		}
-		recordAsync(requestURI, ipAddr, userId, newJSONObject);
+		// 异步记录日志
+		recordAsync(ipAddr, requestURI, requestParams);
 	}
 
 	private boolean isIgnoreUrl(String requestURI) {
@@ -99,16 +87,32 @@ public class BaseSysLogServiceImpl extends BaseServiceImpl<BaseSysLogMapper, Bas
             .anyMatch(url -> antPathMatcher.match(url, requestURI));
 	}
 
+	public void recordAsync(String ipAddr, String requestURI, JSONObject requestParams) {
+		logTaskExecutor.execute(() -> {
+			JSONObject userInfo = CoolSecurityUtil.getAdminUserInfo(requestParams);
 
-	@Async
-	public void recordAsync(String requestURI, String ip, Long userId, JSONObject params) {
-		BaseSysLogEntity logEntity = new BaseSysLogEntity();
-		logEntity.setAction(requestURI);
-		logEntity.setIp(ip);
-		if (userId != null) {
-			logEntity.setUserId(userId);
-		}
-		logEntity.setParams(params);
-		save(logEntity);
+			Long userId = null;
+			if (userInfo != null) {
+				userId = userInfo.getLong("userId");
+			}
+
+			JSONObject newJSONObject = JSONUtil.parseObj(JSONUtil.toJsonStr(requestParams));
+			newJSONObject.remove("tokenInfo");
+			newJSONObject.remove("refreshToken");
+			newJSONObject.remove("body");
+			if (newJSONObject.toString().getBytes().length > logProperties.getMaxByteLength()) {
+				// 超过指定
+				newJSONObject.clear();
+			}
+			BaseSysLogEntity logEntity = new BaseSysLogEntity();
+			logEntity.setAction(requestURI);
+			logEntity.setIp(ipAddr);
+			if (userId != null) {
+				logEntity.setUserId(userId);
+			}
+			logEntity.setParams(newJSONObject);
+			save(logEntity);
+
+		});
 	}
 }

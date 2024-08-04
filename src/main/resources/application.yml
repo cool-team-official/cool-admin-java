@@ -2,6 +2,9 @@ server:
   port: 8001
   servlet:
     context-path: /
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/plain
 
 spring:
   application:
@@ -136,7 +139,14 @@ cool:
       base-url: http://127.0.0.1:${server.port}/upload
   # 系统日志请求参数超过1024字节 就不记录,避免日志过大
   log:
-    maxJsonLength: 1024
+    # 请求参数最大字节,超过请求参数不记录
+    max-byte-length: 1024
+    # 核心线程数的倍数
+    core-pool-size-multiplier: 2
+    # 最大线程数的倍数
+    max-pool-size-multiplier: 3
+    # 队列容量的倍数
+    queue-capacity-multiplier: 3
 # AutoTable配置，根据实体类自动生成表
 auto-table:
   show-banner: false
