@@ -13,7 +13,7 @@
 
 - 后端：**`Springboot3` `Mybatis-Flex`**
 - 前端：**`Vue3` `Vite` `Element-Ui` `Typescript`**
-- 数据库：**`Mysql` `Postgresql(适配中)` `Sqlite(适配中)` `...`**
+- 数据库：**`Mysql` `Postgresql` `Sqlite(适配中)` `...`**
 
 ## 特性
 
