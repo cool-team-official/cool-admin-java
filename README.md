@@ -50,6 +50,10 @@ Ai时代，很多老旧的框架已经无法满足现代化的开发需求，Coo
 
 [https://gitee.com/cool-team-official/cool-admin-vue](https://gitee.com/cool-team-official/cool-admin-vue)
 
+或
+
+[https://gitcode.com/cool_team/cool-admin-vue](https://gitcode.com/cool_team/cool-admin-vue)
+
 ## 微信群
 
 <img width="260" src="https://cool-show.oss-cn-shanghai.aliyuncs.com/admin/wechat.jpeg?v=1" alt="Admin Wechat"></a>
