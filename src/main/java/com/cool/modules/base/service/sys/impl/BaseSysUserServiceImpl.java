@@ -55,6 +55,7 @@ public class BaseSysUserServiceImpl extends BaseServiceImpl<BaseSysUserMapper, B
             Long[].class);
         String databaseDialect = DatabaseDialectUtils.getDatabaseDialect();
         if (databaseDialect.equals(DatabaseDialect.PostgreSQL)) {
+            // 兼容postgresql
             qw.select("base_sys_user.id","base_sys_user.create_time","base_sys_user.department_id",
                 "base_sys_user.email","base_sys_user.head_img","base_sys_user.name","base_sys_user.nick_name",
                 "base_sys_user.phone","base_sys_user.remark","base_sys_user.status",
@@ -72,7 +73,7 @@ public class BaseSysUserServiceImpl extends BaseServiceImpl<BaseSysUserMapper, B
         qw.from(BASE_SYS_USER_ENTITY).leftJoin(BASE_SYS_USER_ROLE_ENTITY)
             .on(BASE_SYS_USER_ENTITY.ID.eq(BASE_SYS_USER_ROLE_ENTITY.USER_ID))
             .leftJoin(BASE_SYS_ROLE_ENTITY)
-            .on(BASE_SYS_USER_ROLE_ENTITY.USER_ID.eq(BASE_SYS_ROLE_ENTITY.ID))
+            .on(BASE_SYS_USER_ROLE_ENTITY.ROLE_ID.eq(BASE_SYS_ROLE_ENTITY.ID))
             .leftJoin(BASE_SYS_DEPARTMENT_ENTITY)
             .on(BASE_SYS_USER_ENTITY.DEPARTMENT_ID.eq(BASE_SYS_DEPARTMENT_ENTITY.ID));
 
@@ -94,6 +95,7 @@ public class BaseSysUserServiceImpl extends BaseServiceImpl<BaseSysUserMapper, B
                 : permsDepartmentArr,
             !CoolSecurityUtil.getAdminUsername().equals("admin")));
         if (databaseDialect.equals(DatabaseDialect.PostgreSQL)) {
+            // 兼容postgresql
             qw.groupBy("base_sys_user.id","base_sys_user.create_time","base_sys_user.department_id",
                 "base_sys_user.email","base_sys_user.head_img","base_sys_user.name","base_sys_user.nick_name",
                 "base_sys_user.phone","base_sys_user.remark","base_sys_user.status",
