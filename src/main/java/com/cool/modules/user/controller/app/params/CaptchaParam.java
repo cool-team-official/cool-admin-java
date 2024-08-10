@@ -7,6 +7,6 @@ import lombok.Setter;
 @Getter
 public class CaptchaParam {
     private String type;
-    private Integer width;
-    private Integer height;
+    private Integer width = 150;
+    private Integer height = 50;
 }

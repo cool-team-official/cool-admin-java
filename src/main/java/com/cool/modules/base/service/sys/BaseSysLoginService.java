@@ -1,5 +1,6 @@
 package com.cool.modules.base.service.sys;
 
+import com.cool.core.enums.UserTypeEnum;
 import com.cool.modules.base.dto.sys.BaseSysLoginDto;
 
 /**
@@ -14,7 +15,7 @@ public interface BaseSysLoginService {
      * @param height 高度
      * @return base64 验证码与ID
      */
-    Object captcha(String type, Integer width, Integer height);
+    Object captcha(UserTypeEnum userTypeEnum, String type, Integer width, Integer height);
 
     /**
      * 校验验证码

@@ -2,6 +2,7 @@ package com.cool.modules.user.controller.app;
 
 import com.cool.core.annotation.CoolRestController;
 import com.cool.core.annotation.TokenIgnore;
+import com.cool.core.enums.UserTypeEnum;
 import com.cool.core.exception.CoolPreconditions;
 import com.cool.core.request.R;
 import com.cool.modules.base.service.sys.BaseSysLoginService;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -121,7 +123,7 @@ public class AppUserLoginController {
     @Operation(summary = "图片验证码")
     @GetMapping("/captcha")
     public R captcha(
-        @RequestBody CaptchaParam param) {
+        @ModelAttribute CaptchaParam param) {
         String type = param.getType();
         Integer width = param.getWidth();
         Integer height = param.getHeight();
@@ -130,7 +132,7 @@ public class AppUserLoginController {
         CoolPreconditions.checkEmpty(width);
         CoolPreconditions.checkEmpty(height);
 
-        return R.ok(baseSysLoginService.captcha(type, width, height));
+        return R.ok(baseSysLoginService.captcha(UserTypeEnum.APP, type, width, height));
     }
 
     /**

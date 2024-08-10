@@ -107,7 +107,7 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
                 .set("ids", service.addBatch(requestParams, array.toList(currentEntityClass()))));
         } else {
             return R.ok(Dict.create().set("id",
-                service.add(requestParams, JSONUtil.parseObj(body).toBean(currentEntityClass()))));
+                service.add(requestParams, requestParams.toBean(currentEntityClass()))));
         }
     }
 

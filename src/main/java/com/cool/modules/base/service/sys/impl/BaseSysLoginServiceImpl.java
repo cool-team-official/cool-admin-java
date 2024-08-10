@@ -5,6 +5,7 @@ import cn.hutool.captcha.GifCaptcha;
 import cn.hutool.captcha.generator.RandomGenerator;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.Dict;
+import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.jwt.JWT;
@@ -44,14 +45,17 @@ public class BaseSysLoginServiceImpl implements BaseSysLoginService {
 	private final BaseSysPermsService baseSysPermsService;
 
 	@Override
-	public Object captcha(String type, Integer width, Integer height) {
+	public Object captcha(UserTypeEnum userTypeEnum, String type, Integer width, Integer height) {
 		// 1、生成验证码 2、生成对应的ID并设置在缓存中，验证码过期时间30分钟；
 		Map<String, Object> result = new HashMap<>();
 		String captchaId = StrUtil.uuid();
 		result.put("captchaId", captchaId);
-		RandomGenerator randomGenerator = new RandomGenerator(4);
 		GifCaptcha gifCaptcha = CaptchaUtil.createGifCaptcha(width, height);
-		gifCaptcha.setGenerator(randomGenerator);
+		if (ObjUtil.equals(userTypeEnum, UserTypeEnum.APP)) {
+			gifCaptcha.setGenerator(new RandomGenerator("0123456789", 4));
+		} else {
+			gifCaptcha.setGenerator(new RandomGenerator(4));
+		}
 		gifCaptcha.setBackground(new Color(248, 248, 248));
 		gifCaptcha.setMaxColor(60);
 		gifCaptcha.setMinColor(55);

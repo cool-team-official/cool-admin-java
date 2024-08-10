@@ -1,6 +1,7 @@
 package com.cool.modules.base.controller.admin;
 
 import com.cool.core.annotation.CoolRestController;
+import com.cool.core.enums.UserTypeEnum;
 import com.cool.core.eps.CoolEps;
 import com.cool.core.file.FileUploadStrategyFactory;
 import com.cool.core.request.R;
@@ -9,12 +10,11 @@ import com.cool.modules.base.service.sys.BaseSysLoginService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * 系统开放接口，无需权限校验
@@ -51,9 +51,9 @@ public class AdminBaseOpenController {
     @Operation(summary = "验证码")
     @GetMapping("/captcha")
     public R captcha(@Parameter(description = "类型：svg|base64") @RequestParam(defaultValue = "base64") String type,
-            @Parameter(description = "宽度") @RequestParam(defaultValue = "150") Integer width,
-            @Parameter(description = "高度") @RequestParam(defaultValue = "50") Integer height) {
-        return R.ok(baseSysLoginService.captcha(type, width, height));
+        @Parameter(description = "宽度") @RequestParam(defaultValue = "150") Integer width,
+        @Parameter(description = "高度") @RequestParam(defaultValue = "50") Integer height) {
+        return R.ok(baseSysLoginService.captcha(UserTypeEnum.ADMIN, type, width, height));
     }
 
     @Operation(summary = "刷新token")
@@ -65,7 +65,7 @@ public class AdminBaseOpenController {
     @Operation(summary = "文件上传")
     @PostMapping(value = "/upload", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.ALL_VALUE })
     public R upload(@RequestPart(value = "file", required = false) @Parameter(description = "文件") MultipartFile[] files,
-            HttpServletRequest request) {
+        HttpServletRequest request) {
         return R.ok(fileUploadStrategyFactory.upload(files, request));
     }
 
