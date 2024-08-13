@@ -14,26 +14,22 @@ import com.cool.modules.base.entity.sys.BaseSysMenuEntity;
 import com.cool.modules.base.service.sys.BaseSysConfService;
 import com.cool.modules.base.service.sys.BaseSysMenuService;
 import com.mybatisflex.core.BaseMapper;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
-import org.springframework.context.ApplicationEventPublisher;
 
 /**
  * 数据库初始数据初始化 在 classpath:cool/data/db 目录下创建.json文件 并定义表数据， 由该类统一执行初始化
@@ -94,7 +90,7 @@ public class DBFromJsonInit implements ApplicationRunner {
     }
 
     private void analysisResources(Resource[] resources)
-            throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         String prefix = "db_";
         for (Resource resource : resources) {
             File resourceFile = new File(resource.getURL().getFile());
@@ -119,7 +115,7 @@ public class DBFromJsonInit implements ApplicationRunner {
     }
 
     private void analysisJson(JSONObject jsonObject)
-            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         Map<String, Class<?>> tableMap = EntityUtils.findTableMap();
         for (String tableName : jsonObject.keySet()) {
             JSONArray records = jsonObject.getJSONArray(tableName);
@@ -134,24 +130,22 @@ public class DBFromJsonInit implements ApplicationRunner {
     /**
      * 插入列表数据
      */
-    private void insertList(BaseMapper<?> baseMapper, Class<?> entityClass,
-                            JSONArray records)
-            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    private void insertList(BaseMapper baseMapper, Class<?> entityClass,
+        JSONArray records)
+        throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         // 插入数据
-        List list = new ArrayList<>();
         for (int i = 0; i < records.size(); i++) {
             JSONObject record = records.getJSONObject(i);
             Object entity = JSONUtil.toBean(record, entityClass);
             Method getIdMethod = entityClass.getMethod("getId");
             Object id = getIdMethod.invoke(entity);
             if (ObjUtil.isNotEmpty(id) && ObjUtil.isNotEmpty(
-                    baseMapper.selectOneById((Long) id))) {
+                baseMapper.selectOneById((Long) id))) {
                 // 数据库已经有值了
                 continue;
             }
-            list.add(entity);
+            baseMapper.insertSelectiveWithPk(entity);
         }
-        baseMapper.insertBatch(list);
     }
 
     /**
