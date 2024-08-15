@@ -4,7 +4,6 @@ import cn.hutool.json.JSONObject;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;
-
 import java.util.List;
 
 /**
@@ -78,6 +77,15 @@ public interface BaseService<T> extends IService<T> {
     Object list(JSONObject requestParams, QueryWrapper queryWrapper);
 
     /**
+     * 查询所有
+     * 带关联查询
+     * @param requestParams 请求参数
+     * @param queryWrapper  查询条件
+     * @return 列表信息
+     */
+    Object listWithRelations(JSONObject requestParams, QueryWrapper queryWrapper);
+
+    /**
      * 分页查询
      *
      * @param requestParams 请求参数
@@ -86,6 +94,16 @@ public interface BaseService<T> extends IService<T> {
      * @return 分页信息
      */
     Object page(JSONObject requestParams, Page<T> page, QueryWrapper queryWrapper);
+
+    /**
+     * 分页查询
+     * 带关联查询
+     * @param requestParams 请求参数
+     * @param page          分页信息
+     * @param queryWrapper  查询条件
+     * @return 分页信息
+     */
+    Object pageWithRelations(JSONObject requestParams, Page<T> page, QueryWrapper queryWrapper);
 
     /**
      * 查询信息

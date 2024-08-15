@@ -79,8 +79,19 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity<T>> e
     }
 
     @Override
+    public Object listWithRelations(JSONObject requestParams, QueryWrapper queryWrapper) {
+        return mapper.selectListWithRelationsByQuery(queryWrapper);
+    }
+
+    @Override
     public Object page(JSONObject requestParams, Page<T> page, QueryWrapper queryWrapper) {
         return this.page(page, queryWrapper);
+    }
+
+    @Override
+    public Object pageWithRelations(JSONObject requestParams, Page<T> page,
+        QueryWrapper queryWrapper) {
+        return mapper.paginateWithRelations(page, queryWrapper);
     }
 
     @Override
