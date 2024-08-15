@@ -50,8 +50,8 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
         }
     }
 
-    private final String COOL_PAGE_OP = "COOL_PAGE_OP";
-    private final String COOL_LIST_OP = "COOL_LIST_OP";
+    protected final String COOL_PAGE_OP = "COOL_PAGE_OP";
+    protected final String COOL_LIST_OP = "COOL_LIST_OP";
 
     private final ThreadLocal<CrudOption<T>> pageOption = new ThreadLocal<>();
     private final ThreadLocal<CrudOption<T>> listOption = new ThreadLocal<>();
