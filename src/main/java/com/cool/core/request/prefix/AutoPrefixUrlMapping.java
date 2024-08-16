@@ -2,14 +2,15 @@ package com.cool.core.request.prefix;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.ObjUtil;
 import com.cool.core.annotation.CoolRestController;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
-
+import com.cool.core.util.ConvertUtil;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 /**
  * 自动配置模块的路由
@@ -23,12 +24,12 @@ public class AutoPrefixUrlMapping extends RequestMappingHandlerMapping {
         RequestMappingInfo info = super.getMappingForMethod(method, handlerType);
         String packageName = handlerType.getPackage().getName();
         if (info != null && annotations.length > 0 && annotations[0].value().length == 0
-                && packageName.contains("modules")) {
+            && packageName.contains("modules")) {
             if (!checkApis(annotations, info)) {
                 return null;
             }
-            String prefix = getPrefix(handlerType, packageName);
-            String cName = getCName(handlerType, prefix);
+            String prefix = getPrefix(packageName);
+            String cName = getCName(annotations[0].cname(), handlerType, prefix);
             info = info.mutate().paths(prefix + "/" + cName).build().combine(info);
         }
         return info;
@@ -69,21 +70,25 @@ public class AutoPrefixUrlMapping extends RequestMappingHandlerMapping {
      * @param prefix      路由前缀
      * @return url地址
      */
-    private String getCName(Class<?> handlerType, String prefix) {
+    private String getCName(String cname, Class<?> handlerType, String prefix) {
+        if (ObjUtil.isNotEmpty(cname)) {
+            return cname;
+        }
         String name = handlerType.getName();
         String[] names = name.split("[.]");
         name = names[names.length - 1];
-        return name.toLowerCase().replace("controller", "").replace(prefix.replace("/", ""), "");
+        cname = name.replace(ConvertUtil.pathToClassName(prefix), "")
+            .replace("Controller", "");
+        return ConvertUtil.classNameToPath(cname);
     }
 
     /**
      * 构建路由前缀
      *
-     * @param handlerType 类
      * @param packageName 包名
      * @return 返回路由前缀
      */
-    private String getPrefix(Class<?> handlerType, String packageName) {
+    private String getPrefix(String packageName) {
         String dotPath = packageName.split("modules")[1]; // 将包路径中多于的部分截取掉
         String[] dotPaths = dotPath.replace(".controller", "").split("[.]");
         List<String> paths = CollUtil.toList(dotPaths);
@@ -96,5 +101,4 @@ public class AutoPrefixUrlMapping extends RequestMappingHandlerMapping {
         dotPath = "/" + CollUtil.join(paths, "/");
         return dotPath;
     }
-
 }

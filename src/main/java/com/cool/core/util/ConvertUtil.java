@@ -1,5 +1,6 @@
 package com.cool.core.util;
 
+import cn.hutool.core.util.StrUtil;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -148,5 +149,39 @@ public class ConvertUtil {
                 }
             }
         }
+    }
+
+
+
+    /**
+     * /admin/goods 转 AdminGoods
+     */
+    public static String pathToClassName(String path) {
+        // 按斜杠分割字符串
+        String[] parts = path.split("/");
+        StringBuilder className = new StringBuilder();
+        for (String part : parts) {
+            // 将每个部分的首字母大写，并追加到 StringBuilder 中
+            className.append(StrUtil.upperFirst(part));
+        }
+        return className.toString();
+    }
+
+    /**
+     * CouponInfo 转 coupon/info
+     */
+    public static String classNameToPath(String className) {
+        StringBuilder path = new StringBuilder();
+        for (char c : className.toCharArray()) {
+            if (Character.isUpperCase(c)) {
+                if (!path.isEmpty()) {
+                    path.append("/");
+                }
+                path.append(Character.toLowerCase(c));
+            } else {
+                path.append(c);
+            }
+        }
+        return path.toString();
     }
 }
