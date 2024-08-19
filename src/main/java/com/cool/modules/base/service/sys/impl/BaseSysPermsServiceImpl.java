@@ -142,7 +142,7 @@ public class BaseSysPermsServiceImpl implements BaseSysPermsService {
 
         QueryWrapper queryWrapper = QueryWrapper.create().select(BASE_SYS_MENU_ENTITY.ALL_COLUMNS).from(BASE_SYS_MENU_ENTITY);
         if (ObjectUtil.isNotEmpty(roleIds)) {
-            queryWrapper.join(BASE_SYS_ROLE_MENU_ENTITY).on(BASE_SYS_MENU_ENTITY.ID.eq(BASE_SYS_ROLE_MENU_ENTITY.MENU_ID)).and(BASE_SYS_ROLE_MENU_ENTITY.ROLE_ID.in((Object) roleIds));
+            queryWrapper.leftJoin(BASE_SYS_ROLE_MENU_ENTITY).on(BASE_SYS_MENU_ENTITY.ID.eq(BASE_SYS_ROLE_MENU_ENTITY.MENU_ID)).and(BASE_SYS_ROLE_MENU_ENTITY.ROLE_ID.in((Object) roleIds));
         }
         return baseSysMenuMapper.selectListByQuery(queryWrapper.groupBy(BASE_SYS_MENU_ENTITY.ID).orderBy(BASE_SYS_MENU_ENTITY.ORDER_NUM, false));
     }

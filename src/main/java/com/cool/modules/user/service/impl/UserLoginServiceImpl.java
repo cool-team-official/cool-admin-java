@@ -3,6 +3,7 @@ package com.cool.modules.user.service.impl;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.Dict;
 import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.digest.MD5;
 import cn.hutool.jwt.JWT;
 import com.cool.core.cache.CoolCache;
@@ -109,9 +110,26 @@ public class UserLoginServiceImpl implements UserLoginService {
     private Object generateTokenByPhone(String phone) {
         UserInfoEntity userInfoEntity = userInfoMapper.selectOneByQuery(
             QueryWrapper.create().eq(UserInfoEntity::getPhone, phone));
+        if (ObjUtil.isEmpty(userInfoEntity)) {
+            userInfoEntity = new UserInfoEntity();
+            userInfoEntity.setPhone(phone);
+            // 生成随机昵称
+            userInfoEntity.setNickName(generateRandomNickname());
+            userInfoEntity.save();
+        }
         return generateToken(userInfoEntity, null);
     }
 
+    /**
+     *
+     * @return 生成的昵称
+     */
+    private String generateRandomNickname() {
+        // 定义昵称的长度
+        int length = 8;
+        // 生成随机字符串
+        return RandomUtil.randomString(length);
+    }
     /**
      * 生成token
      */
