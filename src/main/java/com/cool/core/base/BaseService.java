@@ -78,6 +78,15 @@ public interface BaseService<T> extends IService<T> {
 
     /**
      * 查询所有
+     *
+     * @param requestParams 请求参数
+     * @param queryWrapper  查询条件
+     * @return 列表信息
+     */
+    <R> List<R> list(JSONObject requestParams, QueryWrapper queryWrapper, Class<R> asType);
+
+    /**
+     * 查询所有
      * 带关联查询
      * @param requestParams 请求参数
      * @param queryWrapper  查询条件
@@ -97,6 +106,16 @@ public interface BaseService<T> extends IService<T> {
 
     /**
      * 分页查询
+     *
+     * @param requestParams 请求参数
+     * @param page          分页信息
+     * @param queryWrapper  查询条件
+     * @return 分页信息
+     */
+    <R> Page<R> page(JSONObject requestParams, Page page, QueryWrapper queryWrapper, Class<R> asType);
+
+    /**
+     * 分页查询
      * 带关联查询
      * @param requestParams 请求参数
      * @param page          分页信息
@@ -108,7 +127,7 @@ public interface BaseService<T> extends IService<T> {
     /**
      * 查询信息
      *
-     * @param id ID
+     * @param id            ID
      */
     Object info(Long id);
 

@@ -1,11 +1,16 @@
 package com.cool.core.base;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.Dict;
+import cn.hutool.core.lang.Editor;
+import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.TypeUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.cool.core.enums.QueryModeEnum;
 import com.cool.core.exception.CoolPreconditions;
 import com.cool.core.request.CrudOption;
 import com.cool.core.request.R;
@@ -20,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import lombok.Getter;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -27,6 +33,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * 控制层基类
@@ -60,6 +68,12 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
     @ModelAttribute
     protected void preHandle(HttpServletRequest request,
         @RequestAttribute JSONObject requestParams) {
+        String requestPath = ((ServletRequestAttributes) Objects.requireNonNull(
+            RequestContextHolder.getRequestAttributes())).getRequest().getRequestURI();
+        if (!requestPath.endsWith("/page") && !requestPath.endsWith("/list")) {
+            // 非page或list不执行
+            return;
+        }
         this.pageOption.set(new CrudOption<>(requestParams));
         this.listOption.set(new CrudOption<>(requestParams));
         this.requestParams.set(requestParams);
@@ -133,7 +147,7 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
     @PostMapping("/update")
     protected R update(@RequestBody T t, @RequestAttribute() JSONObject requestParams) {
         Long id = t.getId();
-        JSONObject info = JSONUtil.parseObj(JSONUtil.toJsonStr(service.info(id)));
+        JSONObject info = JSONUtil.parseObj(JSONUtil.toJsonStr(service.getById(id)));
         requestParams.forEach(info::set);
         info.set("updateTime", new Date());
         service.update(requestParams, JSONUtil.toBean(info, currentEntityClass()));
@@ -161,7 +175,14 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
     @PostMapping("/list")
     protected R list(@RequestAttribute() JSONObject requestParams,
         @RequestAttribute(COOL_LIST_OP) CrudOption<T> option) {
-        return R.ok(service.list(requestParams, option.getQueryWrapper(entityClass)));
+        QueryModeEnum queryModeEnum = option.getQueryModeEnum();
+        List list = (List) switch (queryModeEnum) {
+            case ENTITY_WITH_RELATIONS -> service.listWithRelations(requestParams, option.getQueryWrapper(entityClass));
+            case CUSTOM -> transformList(service.list(requestParams, option.getQueryWrapper(entityClass), option.getAsType()), option.getAsType());
+            default -> service.list(requestParams, option.getQueryWrapper(entityClass));
+        };
+        invokerTransform(option, list);
+        return R.ok(list);
     }
 
     /**
@@ -175,9 +196,24 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
         @RequestAttribute(COOL_PAGE_OP) CrudOption<T> option) {
         Integer page = requestParams.getInt("page", 1);
         Integer size = requestParams.getInt("size", 20);
-        return R.ok(
-            pageResult((Page<T>) service.page(requestParams, new Page<>(page, size),
-                option.getQueryWrapper(entityClass))));
+        QueryModeEnum queryModeEnum = option.getQueryModeEnum();
+        Object obj = switch (queryModeEnum) {
+            case ENTITY_WITH_RELATIONS -> service.pageWithRelations(requestParams, new Page<>(page, size), option.getQueryWrapper(entityClass));
+            case CUSTOM -> transformPage(service.page(requestParams, new Page<>(page, size), option.getQueryWrapper(entityClass), option.getAsType()), option.getAsType());
+            default -> service.page(requestParams, new Page<>(page, size), option.getQueryWrapper(entityClass));
+        };
+        Page pageResult = (Page) obj;
+        invokerTransform(option, pageResult.getRecords());
+        return R.ok(pageResult(pageResult));
+    }
+
+    /**
+     * 转换参数，组装数据
+     */
+    private void invokerTransform(CrudOption<T> option, List list) {
+        if (ObjUtil.isNotEmpty(option.getTransform())) {
+            option.getTransform().apply(list);
+        }
     }
 
     /**
@@ -185,7 +221,7 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
      *
      * @param page 分页返回数据
      */
-    protected Map<String, Object> pageResult(Page<T> page) {
+    protected Map<String, Object> pageResult(Page page) {
         Map<String, Object> result = new HashMap<>();
         Map<String, Object> pagination = new HashMap<>();
         pagination.put("size", page.getPageSize());
@@ -223,4 +259,21 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
         return Convert.toList(Long.class, ids);
     }
 
+    /**
+     * 适用于自定义返回值为 map，map 的key为数据库字段，转驼峰命名
+     */
+    protected List transformList(List records, Class<?> asType) {
+        if (ObjUtil.isEmpty(asType) || !Map.class.isAssignableFrom(asType)) {
+            return records;
+        }
+        List<Map> list = new ArrayList<>();
+        Editor<String> keyEditor = property -> StrUtil.toCamelCase(property);
+        records.forEach(o ->
+            list.add(BeanUtil.beanToMap(o, new HashMap(), false, keyEditor)));
+        return list;
+    }
+    protected Page transformPage(Page page, Class<?> asType) {
+        page.setRecords(transformList(page.getRecords(), asType));
+        return page;
+    }
 }

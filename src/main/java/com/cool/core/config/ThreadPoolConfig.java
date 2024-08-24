@@ -1,6 +1,8 @@
 package com.cool.core.config;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,5 +31,11 @@ public class ThreadPoolConfig {
         executor.setRejectedExecutionHandler(new LogDiscardPolicy());
         executor.initialize();
         return executor;
+    }
+
+    @Bean(name = "cachedThreadPool")
+    public ExecutorService cachedThreadPool() {
+        // 创建一个虚拟线程池，每个任务使用一个虚拟线程执行
+        return Executors.newCachedThreadPool();
     }
 }

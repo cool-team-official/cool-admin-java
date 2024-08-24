@@ -2,11 +2,13 @@ package com.cool.core.request;
 
 
 import cn.hutool.core.annotation.AnnotationUtil;
+import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONObject;
+import com.cool.core.enums.QueryModeEnum;
 import com.mybatisflex.annotation.Table;
 import com.mybatisflex.core.query.QueryColumn;
 import com.mybatisflex.core.query.QueryCondition;
@@ -14,6 +16,7 @@ import com.mybatisflex.core.query.QueryTable;
 import com.mybatisflex.core.query.QueryWrapper;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import lombok.Data;
 import org.springframework.core.env.Environment;
 
@@ -31,17 +34,26 @@ public class CrudOption<T> {
     private QueryColumn[] select;
     private JSONObject requestParams;
 
+    private QueryModeEnum queryModeEnum;
+
+    private Transform<List> transform;
+
+    public interface Transform<List> {
+        void apply(List list);
+    }
+
+    /**
+     * queryModeEnum 为 CUSTOM,可设置 默认为Map
+     */
+    private Class<?> asType;
+
     private Environment evn;
 
     public CrudOption(JSONObject requestParams) {
         this.requestParams = requestParams;
         this.queryWrapper = QueryWrapper.create();
         this.evn = SpringUtil.getBean(Environment.class);
-    }
-
-    public CrudOption<T> fieldEq(QueryColumn... fields) {
-        this.fieldEq = fields;
-        return this;
+        queryModeEnum = QueryModeEnum.ENTITY;
     }
 
     public QueryWrapper getQueryWrapper(Class<T> entityClass) {
@@ -53,16 +65,58 @@ public class CrudOption<T> {
         return this;
     }
 
+    /**
+     * 按前端传上来的字段值做eq
+     */
+    public CrudOption<T> fieldEq(QueryColumn... fields) {
+        this.fieldEq = fields;
+        return this;
+    }
+
+    /**
+     * 按前端传上来的字段值做like
+     */
     public CrudOption<T> keyWordLikeFields(QueryColumn... fields) {
         this.keyWordLikeFields = fields;
         return this;
     }
 
+    /**
+     * 需要返回给前端的字段
+     */
     public CrudOption<T> select(QueryColumn... selects) {
         this.select = selects;
         return this;
     }
 
+    /**
+     * 查询模式决定返回值
+     * 目前有三种模式，按实体查询返回、关联查询返回(实体字段上加 @RelationOneToMany 等注解)、自定义返回结果
+     */
+    public CrudOption<T> queryModeEnum(QueryModeEnum queryModeEnum) {
+        this.queryModeEnum = queryModeEnum;
+        if (ObjUtil.equal(queryModeEnum, QueryModeEnum.CUSTOM)
+            && ObjUtil.isEmpty(asType)) {
+            asType = Map.class;
+        }
+        return this;
+    }
+
+    /**
+     * 自定义返回结果对象类型
+     */
+    public CrudOption<T> asType(Class<?> asType) {
+        this.asType = asType;
+        return this;
+    }
+
+    /**
+     * 转换参数，组装数据
+     */
+    public CrudOption<T> transform(Transform<List> transform) {
+        this.transform = transform;
+        return this;
+    }
 
     /**
      * 构建查询条件
