@@ -5,7 +5,6 @@ import com.cool.core.annotation.CoolRestController;
 import com.cool.core.annotation.TokenIgnore;
 import com.cool.core.eps.CoolEps;
 import com.cool.core.file.FileUploadStrategyFactory;
-import com.cool.core.leaf.IDGenService;
 import com.cool.core.request.R;
 import com.cool.modules.base.entity.sys.BaseSysUserEntity;
 import com.cool.modules.base.service.sys.BaseSysLoginService;
@@ -42,15 +41,10 @@ public class AdminBaseCommController {
 
     final private FileUploadStrategyFactory fileUploadStrategyFactory;
 
-    final private IDGenService idGenService;
-
     @TokenIgnore
     @Operation(summary = "实体信息与路径", description = "系统所有的实体信息与路径，供前端自动生成代码与服务")
     @GetMapping("/eps")
     public R eps() {
-        long orderId = idGenService.next("orderId");
-
-        System.out.println(orderId);
         return R.ok(coolEps.getAdmin());
     }
 
