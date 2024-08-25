@@ -64,7 +64,7 @@ public class CoolPluginInvokers {
      */
     public static Object invoke(String key, String methodName, Object... params) {
         Object beanInstance = dynamicJarLoaderService.getBeanInstance(key);
-        CoolPreconditions.checkEmpty(beanInstance, "未找到该插件：" + key);
+        CoolPreconditions.checkEmpty(beanInstance, "未找到该插件：{}, 请前往插件市场进行安装",key);
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             // 设置当前线程的上下文类加载器为插件的类加载器

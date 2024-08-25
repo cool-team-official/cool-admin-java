@@ -61,6 +61,13 @@ public class CoolCache {
     }
 
     /**
+     * 数据来源
+     */
+    public static interface ToCacheData {
+        Object apply();
+    }
+
+    /**
      * 删除缓存
      *
      * @param keys 一个或多个key
@@ -83,6 +90,24 @@ public class CoolCache {
         Object ifNullValue = getIfNullValue(key);
         if (ObjUtil.equals(ifNullValue, NULL_VALUE)) {
             return null;
+        }
+        return ifNullValue;
+    }
+
+    /**
+     * 普通缓存获取
+     *
+     * @param key 键
+     */
+    public Object get(String key, Duration duration, ToCacheData toCacheData) {
+        Object ifNullValue = getIfNullValue(key);
+        if (ObjUtil.equals(ifNullValue, NULL_VALUE)) {
+            return null;
+        }
+        if (ObjUtil.isEmpty(ifNullValue)) {
+            Object obj = toCacheData.apply();
+            set(key, obj, duration.toSeconds());
+            return obj;
         }
         return ifNullValue;
     }
