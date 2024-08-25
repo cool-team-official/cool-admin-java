@@ -1,18 +1,24 @@
 package com.cool.modules.base.controller.app;
 
+import cn.hutool.json.JSONObject;
 import com.cool.core.annotation.CoolRestController;
 import com.cool.core.annotation.TokenIgnore;
 import com.cool.core.eps.CoolEps;
+import com.cool.core.exception.CoolPreconditions;
 import com.cool.core.file.FileUploadStrategyFactory;
 import com.cool.core.request.R;
+import com.cool.modules.base.service.sys.BaseSysParamService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,9 +30,23 @@ import org.springframework.web.multipart.MultipartFile;
 @CoolRestController
 public class AppBaseCommController {
 
-    final private CoolEps coolEps;
+    private final CoolEps coolEps;
+
+    private final BaseSysParamService baseSysParamService;
+
+    @Value("${cool.sysParam.allowKeys:[]}")
+    private List<String> allowKeys;
 
     final private FileUploadStrategyFactory fileUploadStrategyFactory;
+
+    @TokenIgnore
+    @Operation(summary = "参数配置")
+    @GetMapping("/param")
+    public R param(@RequestAttribute() JSONObject requestParams) {
+        String key = requestParams.get("key", String.class);
+        CoolPreconditions.check(!allowKeys.contains(key), "非法操作");
+        return R.ok(baseSysParamService.dataByKey(key));
+    }
 
     @TokenIgnore
     @Operation(summary = "实体信息与路径", description = "系统所有的实体信息与路径，供前端自动生成代码与服务")
