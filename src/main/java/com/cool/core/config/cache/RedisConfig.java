@@ -15,9 +15,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 public class RedisConfig {
 
     @Bean
-    public RedisTemplate<Object, Object> redisTemplate(
+    public RedisTemplate<String, Object> redisTemplate(
         RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<Object, Object> template = new RedisTemplate<>();
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
         return template;
     }

@@ -5,7 +5,12 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONUtil;
 import com.cool.core.util.ConvertUtil;
 import jakarta.annotation.PostConstruct;
+import java.time.Duration;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.cache.CacheType;
@@ -41,6 +46,10 @@ public class CoolCache {
 
     final private CacheManager cacheManager;
 
+    private final Map<String, Lock> lockMap = new ConcurrentHashMap<>();
+
+    private static final String LOCK_PREFIX = "lock:";
+
     @PostConstruct
     private void init() {
         cache = cacheManager.getCache(cacheName);
@@ -57,8 +66,7 @@ public class CoolCache {
      * @param keys 一个或多个key
      */
     public void del(String... keys) {
-        if (type.equalsIgnoreCase(CacheType.CAFFEINE.name()) || type.equalsIgnoreCase(
-            CacheType.JCACHE.name())) {
+        if (type.equalsIgnoreCase(CacheType.CAFFEINE.name())) {
             Arrays.stream(keys).forEach(o -> cache.evict(o));
         }
         if (type.equalsIgnoreCase(CacheType.REDIS.name())) {
@@ -80,8 +88,7 @@ public class CoolCache {
     }
 
     private Object getIfNullValue(String key) {
-        if (type.equalsIgnoreCase(CacheType.CAFFEINE.name()) || type.equalsIgnoreCase(
-            CacheType.JCACHE.name())) {
+        if (type.equalsIgnoreCase(CacheType.CAFFEINE.name())) {
             Cache.ValueWrapper valueWrapper = cache.get(key);
             if (valueWrapper != null) {
                 return valueWrapper.get(); // 获取实际的缓存值
@@ -145,15 +152,77 @@ public class CoolCache {
         if (ObjUtil.isNull(value)) {
             value = NULL_VALUE;
         }
-        if (type.equalsIgnoreCase(CacheType.CAFFEINE.name()) || type.equalsIgnoreCase(
-            CacheType.JCACHE.name())) {
+        if (type.equalsIgnoreCase(CacheType.CAFFEINE.name())) {
             // 放入缓存
             cache.put(key, value);
-        }
-        if (type.equalsIgnoreCase(CacheType.REDIS.name())) {
+        } else if (type.equalsIgnoreCase(CacheType.REDIS.name())) {
             redisCache.put(cacheName, key.getBytes(), ObjectUtil.serialize(value),
                 java.time.Duration.ofSeconds(ttl));
         }
     }
 
+    /**
+     * 尝试获取锁
+     *
+     * @param key 锁的 key
+     * @param expireTime 锁的过期时间
+     * @return 如果成功获取锁则返回 true，否则返回 false
+     */
+    public boolean tryLock(String key, Duration expireTime) {
+        String lockKey = getLockKey(key);
+        if (type.equalsIgnoreCase(CacheType.CAFFEINE.name())) {
+            Lock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+            return lock.tryLock();
+        }
+        byte[] lockKeyBytes = lockKey.getBytes();
+        // 使用 putIfAbsent 来尝试设置锁，如果成功返回 true，否则返回 false
+        return redisCache.putIfAbsent(cacheName, lockKeyBytes, new byte[0], expireTime) == null;
+    }
+
+    /**
+     * 释放锁
+     */
+    public void unlock(String key) {
+        String lockKey = getLockKey(key);
+        if (type.equalsIgnoreCase(CacheType.CAFFEINE.name())) {
+            Lock lock = lockMap.get(lockKey);
+            if (lock != null && lock.tryLock()) {
+                lock.unlock();
+                lockMap.remove(lockKey);
+            }
+            return;
+        }
+        redisCache.remove(cacheName, lockKey.getBytes());
+    }
+
+    /**
+     * 拼接锁前缀
+     */
+    private String getLockKey(String key) {
+        return LOCK_PREFIX + key;
+    }
+
+    /**
+     * 等待锁
+     *
+     * @param key 锁的 key
+     * @param expireTime 锁的过期时间
+     * @return 如果成功获取锁则返回 true，否则返回 false
+     */
+    public boolean waitForLock(String key, Duration expireTime, Duration waitTime) {
+        long endTime = System.currentTimeMillis() + waitTime.toMillis();
+        while (System.currentTimeMillis() < endTime) {
+            if (tryLock(key, expireTime)) {
+                return true;
+            }
+            // 等待锁释放
+            try {
+                Thread.sleep(100); // 可以根据需要调整等待时间
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
+        }
+        return false;
+    }
 }
