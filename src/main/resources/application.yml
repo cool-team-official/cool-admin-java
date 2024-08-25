@@ -91,6 +91,7 @@ ignored:
   # 忽略记录请求日志url
   logUrls:
     - /
+    - /**/eps
     - /app/**
     - /css/*
     - /js/*
@@ -111,7 +112,7 @@ mybatis-flex:
   #  configuration:
   #MyBatis Mapper 所对应的 XML 文件位置，如果在 Mapper 中有自定义的方法（XML 中有自定义的实现），需要进行该配置，指定 Mapper 所对应的 XML 文件位置
   mapper-locations: [ "classpath*:/mapper/**/*.xml" ]
-  type-aliases-package: com.cool.modules.*.entity.*
+  type-aliases-package: com.cool.**.entity.*
   global-config:
     print-banner: false
 
@@ -150,3 +151,7 @@ cool:
 # AutoTable配置，根据实体类自动生成表
 auto-table:
   show-banner: false
+
+leaf:
+  segment:
+    enable: true

@@ -21,7 +21,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableAsync // 开启异步处理
 @EnableCaching // 开启缓存
 @SpringBootApplication
-@MapperScan("com.cool.modules.*.mapper") // 扫描指定包中的MyBatis映射器
+@MapperScan("com.cool.**.mapper") // 扫描指定包中的MyBatis映射器
 public class CoolApplication {
 
     private static volatile ConfigurableApplicationContext context;

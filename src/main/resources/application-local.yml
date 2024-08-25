@@ -18,7 +18,7 @@ auto-table:
   # 建表的时候，父类的字段排序是在子类后面还是前面
   superInsertPosition: before
   # 模型包路径
-  model-package: com.cool.modules.*.entity.*
+  model-package: com.cool.**.entity.*
 
 # Cool相关配置
 cool:

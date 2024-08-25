@@ -24,6 +24,7 @@
         <ognl.version>3.3.2</ognl.version>
         <fastjson2.version>2.0.51</fastjson2.version>
         <springdoc-openapi.version>2.5.0</springdoc-openapi.version>
+        <perf4j.version>0.9.16</perf4j.version>
     </properties>
 
     <dependencies>
@@ -127,6 +128,11 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.perf4j</groupId>
+            <artifactId>perf4j</artifactId>
+            <version>${perf4j.version}</version>
         </dependency>
     </dependencies>
 
