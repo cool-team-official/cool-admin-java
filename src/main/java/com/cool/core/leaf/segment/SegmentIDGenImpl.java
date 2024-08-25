@@ -52,9 +52,9 @@ public class SegmentIDGenImpl implements IDGenService {
      * 一个Segment维持时间为15分钟
      */
     private static final long SEGMENT_DURATION = 15 * 60 * 1000L;
-    private ExecutorService service = new ThreadPoolExecutor(5, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new UpdateThreadFactory());
+    private final ExecutorService service = new ThreadPoolExecutor(5, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), new UpdateThreadFactory());
     private volatile boolean initOK = false;
-    private Map<String, SegmentBuffer> cache = new ConcurrentHashMap<String, SegmentBuffer>();
+    private final Map<String, SegmentBuffer> cache = new ConcurrentHashMap<>();
     private final LeafAllocMapper leafAllocMapper;
 
     public static class UpdateThreadFactory implements ThreadFactory {
@@ -105,18 +105,15 @@ public class SegmentIDGenImpl implements IDGenService {
         try {
             List<String> dbTags = leafAllocMapper.selectListByQuery(QueryWrapper.create().select(
                 LeafAllocEntity::getKey)).stream().map(LeafAllocEntity::getKey).toList();
-            if (dbTags == null || dbTags.isEmpty()) {
+            if (dbTags.isEmpty()) {
                 return;
             }
             List<String> cacheTags = new ArrayList<String>(cache.keySet());
             Set<String> insertTagsSet = new HashSet<>(dbTags);
             Set<String> removeTagsSet = new HashSet<>(cacheTags);
             //db中新加的tags灌进cache
-            for(int i = 0; i < cacheTags.size(); i++){
-                String tmp = cacheTags.get(i);
-                if(insertTagsSet.contains(tmp)){
-                    insertTagsSet.remove(tmp);
-                }
+            for (String tmp : cacheTags) {
+                insertTagsSet.remove(tmp);
             }
             for (String tag : insertTagsSet) {
                 SegmentBuffer buffer = new SegmentBuffer();
@@ -129,11 +126,8 @@ public class SegmentIDGenImpl implements IDGenService {
                 logger.info("Add tag {} from db to IdCache, SegmentBuffer {}", tag, buffer);
             }
             //cache中已失效的tags从cache删除
-            for(int i = 0; i < dbTags.size(); i++){
-                String tmp = dbTags.get(i);
-                if(removeTagsSet.contains(tmp)){
-                    removeTagsSet.remove(tmp);
-                }
+            for (String tmp : dbTags) {
+                removeTagsSet.remove(tmp);
             }
             for (String tag : removeTagsSet) {
                 cache.remove(tag);
@@ -239,26 +233,23 @@ public class SegmentIDGenImpl implements IDGenService {
             try {
                 final Segment segment = buffer.getCurrent();
                 if (!buffer.isNextReady() && (segment.getIdle() < 0.9 * segment.getStep()) && buffer.getThreadRunning().compareAndSet(false, true)) {
-                    service.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            Segment next = buffer.getSegments()[buffer.nextPos()];
-                            boolean updateOk = false;
-                            try {
-                                updateSegmentFromDb(buffer.getKey(), next);
-                                updateOk = true;
-                                logger.info("update segment {} from db {}", buffer.getKey(), next);
-                            } catch (Exception e) {
-                                logger.warn(buffer.getKey() + " updateSegmentFromDb exception", e);
-                            } finally {
-                                if (updateOk) {
-                                    buffer.wLock().lock();
-                                    buffer.setNextReady(true);
-                                    buffer.getThreadRunning().set(false);
-                                    buffer.wLock().unlock();
-                                } else {
-                                    buffer.getThreadRunning().set(false);
-                                }
+                    service.execute(() -> {
+                        Segment next = buffer.getSegments()[buffer.nextPos()];
+                        boolean updateOk = false;
+                        try {
+                            updateSegmentFromDb(buffer.getKey(), next);
+                            updateOk = true;
+                            logger.info("update segment {} from db {}", buffer.getKey(), next);
+                        } catch (Exception e) {
+                            logger.warn(buffer.getKey() + " updateSegmentFromDb exception", e);
+                        } finally {
+                            if (updateOk) {
+                                buffer.wLock().lock();
+                                buffer.setNextReady(true);
+                                buffer.getThreadRunning().set(false);
+                                buffer.wLock().unlock();
+                            } else {
+                                buffer.getThreadRunning().set(false);
                             }
                         }
                     });
