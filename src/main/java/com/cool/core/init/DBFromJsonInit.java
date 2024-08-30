@@ -144,7 +144,12 @@ public class DBFromJsonInit implements ApplicationRunner {
                 // 数据库已经有值了
                 continue;
             }
-            baseMapper.insertSelectiveWithPk(entity);
+            if (ObjUtil.isNotEmpty(id)) {
+                // 带id插入
+                baseMapper.insertSelectiveWithPk(entity);
+            } else {
+                baseMapper.insert(entity);
+            }
         }
     }
 
