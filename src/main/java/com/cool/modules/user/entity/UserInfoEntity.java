@@ -27,10 +27,10 @@ public class UserInfoEntity extends BaseEntity<UserInfoEntity> {
     private String phone;
 
     @ColumnDefine(comment = "性别 0-未知 1-男 2-女", defaultValue = "0")
-    private String gender;
+    private Integer gender;
 
     @ColumnDefine(comment = "状态 0-禁用 1-正常 2-已注销", defaultValue = "1")
-    private String status;
+    private Integer status;
 
     @ColumnDefine(comment = "登录方式 0-小程序 1-公众号 2-H5", defaultValue = "0")
     private String loginType;

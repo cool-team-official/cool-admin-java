@@ -3,6 +3,7 @@ package com.cool.core.exception;
 import cn.hutool.core.util.ObjUtil;
 import com.cool.core.request.R;
 import lombok.extern.slf4j.Slf4j;
+import me.chanjar.weixin.common.error.WxErrorException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -24,6 +25,9 @@ public class CoolExceptionHandler {
         } else {
             r.put("code", e.getCode());
             r.put("message", e.getMessage());
+        }
+        if (ObjUtil.isNotEmpty(e.getCause())) {
+            log.error(e.getCause().getMessage(), e.getCause());
         }
         return r;
     }
@@ -57,5 +61,11 @@ public class CoolExceptionHandler {
     public R handleException(Exception e) {
         log.error(e.getMessage(), e);
         return R.error();
+    }
+
+    @ExceptionHandler(WxErrorException.class)
+    public R handleException(WxErrorException e) {
+        log.error(e.getMessage(), e);
+        return R.error(e.getMessage());
     }
 }

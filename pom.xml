@@ -25,6 +25,7 @@
         <fastjson2.version>2.0.51</fastjson2.version>
         <springdoc-openapi.version>2.5.0</springdoc-openapi.version>
         <perf4j.version>0.9.16</perf4j.version>
+        <weixin-java.version>4.6.3.B</weixin-java.version>
     </properties>
 
     <dependencies>
@@ -120,6 +121,18 @@
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>${springdoc-openapi.version}</version>
         </dependency>
+        <!-- 微信相关 start-->
+        <dependency>
+            <groupId>com.github.binarywang</groupId>
+            <artifactId>weixin-java-miniapp</artifactId>
+            <version>${weixin-java.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.binarywang</groupId>
+            <artifactId>weixin-java-mp</artifactId>
+            <version>${weixin-java.version}</version>
+        </dependency>
+        <!-- 微信相关 end-->
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>

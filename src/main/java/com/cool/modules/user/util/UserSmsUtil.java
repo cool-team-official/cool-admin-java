@@ -27,7 +27,7 @@ public class UserSmsUtil {
      * 短信发送场景枚举
      */
     public enum SendSceneEnum {
-        login, // 登录
+        ALL,
     }
 
     private final CoolPluginService coolPluginService;
