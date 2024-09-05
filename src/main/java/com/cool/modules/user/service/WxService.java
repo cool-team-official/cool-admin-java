@@ -15,14 +15,14 @@ public class WxService {
     private WxMaService wxMaService;
 
     private WxMpService wxMpService;
-    private WxMaService getWxMaService() {
+    public WxMaService getWxMaService() {
         if (ObjUtil.isNotEmpty(wxMaService)) {
             return wxMaService;
         }
         wxMaService = (WxMaService)CoolPluginInvokers.invoke("wx", "getWxMaService");
         return wxMaService;
     }
-    private WxMpService getWxMpService() {
+    public WxMpService getWxMpService() {
         if (ObjUtil.isNotEmpty(wxMpService)) {
             return wxMpService;
         }
