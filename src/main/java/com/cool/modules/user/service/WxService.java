@@ -19,14 +19,14 @@ public class WxService {
         if (ObjUtil.isNotEmpty(wxMaService)) {
             return wxMaService;
         }
-        wxMaService = (WxMaService)CoolPluginInvokers.invoke("wx-sdk", "getWxMaService");
+        wxMaService = (WxMaService)CoolPluginInvokers.invoke("wx", "getWxMaService");
         return wxMaService;
     }
     private WxMpService getWxMpService() {
         if (ObjUtil.isNotEmpty(wxMpService)) {
             return wxMpService;
         }
-        wxMpService = (WxMpService)CoolPluginInvokers.invoke("wx-sdk", "getWxMpService");
+        wxMpService = (WxMpService)CoolPluginInvokers.invoke("wx", "getWxMpService");
         return wxMpService;
     }
 

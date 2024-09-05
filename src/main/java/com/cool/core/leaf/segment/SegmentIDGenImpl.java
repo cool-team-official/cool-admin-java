@@ -20,12 +20,13 @@ import org.perf4j.StopWatch;
 import org.perf4j.slf4j.Slf4JStopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class SegmentIDGenImpl implements IDGenService {
+public class SegmentIDGenImpl implements IDGenService, DisposableBean {
 
     private static final Logger logger = LoggerFactory.getLogger(SegmentIDGenImpl.class);
 
@@ -52,7 +53,13 @@ public class SegmentIDGenImpl implements IDGenService {
      * 一个Segment维持时间为15分钟
      */
     private static final long SEGMENT_DURATION = 15 * 60 * 1000L;
-    private final ExecutorService service = new ThreadPoolExecutor(5, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), new UpdateThreadFactory());
+    private final ExecutorService executorService = new ThreadPoolExecutor(5, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), new UpdateThreadFactory());
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread t = new Thread(r);
+        t.setName("check-idCache-thread");
+        t.setDaemon(true);
+        return t;
+    });
     private volatile boolean initOK = false;
     private final Map<String, SegmentBuffer> cache = new ConcurrentHashMap<>();
     private final LeafAllocMapper leafAllocMapper;
@@ -90,13 +97,7 @@ public class SegmentIDGenImpl implements IDGenService {
     }
 
     private void updateCacheFromDbAtEveryMinute() {
-        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread t = new Thread(r);
-            t.setName("check-idCache-thread");
-            t.setDaemon(true);
-            return t;
-        });
-        service.scheduleWithFixedDelay(this::updateCacheFromDb, 60, 60, TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(this::updateCacheFromDb, 60, 60, TimeUnit.SECONDS);
     }
 
     private void updateCacheFromDb() {
@@ -233,7 +234,7 @@ public class SegmentIDGenImpl implements IDGenService {
             try {
                 final Segment segment = buffer.getCurrent();
                 if (!buffer.isNextReady() && (segment.getIdle() < 0.9 * segment.getStep()) && buffer.getThreadRunning().compareAndSet(false, true)) {
-                    service.execute(() -> {
+                    executorService.execute(() -> {
                         Segment next = buffer.getSegments()[buffer.nextPos()];
                         boolean updateOk = false;
                         try {
@@ -296,5 +297,14 @@ public class SegmentIDGenImpl implements IDGenService {
                 }
             }
         }
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        executorService.shutdown();
+        executorService.awaitTermination(10, TimeUnit.SECONDS);
+
+        scheduledExecutorService.shutdown();
+        scheduledExecutorService.awaitTermination(10, TimeUnit.SECONDS);
     }
 }
