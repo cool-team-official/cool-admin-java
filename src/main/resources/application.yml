@@ -152,6 +152,8 @@ cool:
 auto-table:
   show-banner: false
 
+# 分布式唯一ID组件
 leaf:
   segment:
+    # 默认禁用
     enable: false
