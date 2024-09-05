@@ -15,10 +15,10 @@ import com.cool.core.security.jwt.JwtUser;
 import com.cool.modules.base.service.sys.BaseSysLoginService;
 import com.cool.modules.user.entity.UserInfoEntity;
 import com.cool.modules.user.entity.UserWxEntity;
+import com.cool.modules.user.proxy.WxProxy;
 import com.cool.modules.user.service.UserInfoService;
 import com.cool.modules.user.service.UserLoginService;
 import com.cool.modules.user.service.UserWxService;
-import com.cool.modules.user.service.WxService;
 import com.cool.modules.user.util.UserSmsUtil;
 import com.cool.modules.user.util.UserSmsUtil.SendSceneEnum;
 import com.mybatisflex.core.query.QueryWrapper;
@@ -45,7 +45,7 @@ public class UserLoginServiceImpl implements UserLoginService {
 
     private final UserWxService userWxService;
 
-    private final WxService wxService;
+    private final WxProxy wxProxy;
     private final static List<GrantedAuthority> authority =
       List.of(new SimpleGrantedAuthority("ROLE_" + UserTypeEnum.APP.name()));
 
@@ -115,7 +115,7 @@ public class UserLoginServiceImpl implements UserLoginService {
     @Override
     public Object miniPhone(String code, String encryptedData, String iv) {
         try {
-            WxMaPhoneNumberInfo phoneNumber = wxService.getPhoneNumber(code);
+            WxMaPhoneNumberInfo phoneNumber = wxProxy.getPhoneNumber(code);
             CoolPreconditions.checkEmpty(phoneNumber, "微信登录失败");
             return generateTokenByPhone(phoneNumber.getPhoneNumber());
         } catch (WxErrorException e) {

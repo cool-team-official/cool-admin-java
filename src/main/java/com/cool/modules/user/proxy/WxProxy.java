@@ -1,4 +1,4 @@
-package com.cool.modules.user.service;
+package com.cool.modules.user.proxy;
 
 import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
@@ -10,7 +10,7 @@ import me.chanjar.weixin.mp.api.WxMpService;
 import org.springframework.stereotype.Service;
 
 @Service
-public class WxService {
+public class WxProxy {
     public WxMaService getWxMaService() {
         return (WxMaService)CoolPluginInvokers.invoke("wx", "getWxMaService");
     }

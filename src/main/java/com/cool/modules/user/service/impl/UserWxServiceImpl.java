@@ -8,8 +8,8 @@ import com.cool.core.base.BaseServiceImpl;
 import com.cool.core.exception.CoolPreconditions;
 import com.cool.modules.user.entity.UserWxEntity;
 import com.cool.modules.user.mapper.UserWxMapper;
+import com.cool.modules.user.proxy.WxProxy;
 import com.cool.modules.user.service.UserWxService;
-import com.cool.modules.user.service.WxService;
 import com.mybatisflex.core.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import me.chanjar.weixin.common.error.WxErrorException;
@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserWxServiceImpl extends BaseServiceImpl<UserWxMapper, UserWxEntity> implements UserWxService {
 
-    private final WxService wxService;
+    private final WxProxy wxProxy;
 
     /**
      * 获得小程序用户信息
@@ -31,9 +31,9 @@ public class UserWxServiceImpl extends BaseServiceImpl<UserWxMapper, UserWxEntit
         // 获取 session
         WxMaJscode2SessionResult result = null;
         try {
-            result = wxService.getSessionInfo(code);
+            result = wxProxy.getSessionInfo(code);
             // 解密数据
-            WxMaUserInfo wxMaUserInfo = wxService.getUserInfo(result.getSessionKey(), encryptedData, iv);
+            WxMaUserInfo wxMaUserInfo = wxProxy.getUserInfo(result.getSessionKey(), encryptedData, iv);
             if (ObjUtil.isNotEmpty(wxMaUserInfo)) {
                 UserWxEntity userWxEntity = BeanUtil.copyProperties(wxMaUserInfo, UserWxEntity.class);
                 userWxEntity.setOpenid(result.getOpenid());
