@@ -7,6 +7,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import com.cool.core.enums.QueryModeEnum;
 import com.mybatisflex.annotation.Table;
@@ -36,10 +37,10 @@ public class CrudOption<T> {
 
     private QueryModeEnum queryModeEnum;
 
-    private Transform<List> transform;
+    private Transform<Object> transform;
 
-    public interface Transform<List> {
-        void apply(List list);
+    public interface Transform<B> {
+        void apply(B obj);
     }
 
     /**
@@ -113,7 +114,7 @@ public class CrudOption<T> {
     /**
      * 转换参数，组装数据
      */
-    public CrudOption<T> transform(Transform<List> transform) {
+    public CrudOption<T> transform(Transform<Object> transform) {
         this.transform = transform;
         return this;
     }
@@ -125,8 +126,19 @@ public class CrudOption<T> {
      */
     private QueryWrapper build(QueryWrapper queryWrapper, Class<T> entityClass) {
         if (ObjectUtil.isNotEmpty(fieldEq)) {
-            Arrays.stream(fieldEq).toList().forEach(filed -> queryWrapper.and(
-                filed.eq(requestParams.get(StrUtil.toCamelCase(filed.getName())))));
+            Arrays.stream(fieldEq).toList().forEach(filed -> {
+                Object obj = requestParams.get(StrUtil.toCamelCase(filed.getName()));
+                if (ObjUtil.isEmpty(obj)) {
+                    return;
+                }
+                if (obj instanceof JSONArray) {
+                    // 集合
+                    queryWrapper.and(filed.in(((JSONArray)obj).toArray()));
+                } else {
+                    // 对象
+                    queryWrapper.and(filed.eq(obj));
+                }
+            });
         }
         Object keyWord = requestParams.get("keyWord");
         if (ObjectUtil.isNotEmpty(this.keyWordLikeFields) && ObjectUtil.isNotEmpty(keyWord)) {

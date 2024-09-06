@@ -210,9 +210,15 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
     /**
      * 转换参数，组装数据
      */
-    private void invokerTransform(CrudOption<T> option, List list) {
+    private void invokerTransform(CrudOption<T> option, Object obj) {
         if (ObjUtil.isNotEmpty(option.getTransform())) {
-            option.getTransform().apply(list);
+            if (obj instanceof List) {
+                ((List)obj).forEach(o -> {
+                    option.getTransform().apply(o);
+                });
+            } else {
+                option.getTransform().apply(obj);
+            }
         }
     }
 

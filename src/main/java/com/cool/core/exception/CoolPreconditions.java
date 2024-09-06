@@ -1,6 +1,8 @@
 package com.cool.core.exception;
 
 import cn.hutool.core.util.ObjectUtil;
+import java.util.Arrays;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,19 +17,32 @@ public class CoolPreconditions {
      */
     public static void check(boolean flag, int code, String message, Object... arguments) {
         if (flag) {
-            throw new CoolException(formatMessage(message, arguments), code);
+            throw getCoolException(message, code, arguments);
         }
     }
 
     public static void check(boolean flag, String message, Object... arguments) {
         if (flag) {
-            throw new CoolException(formatMessage(message, arguments));
+            throw getCoolException(message, arguments);
         }
     }
 
     public static void alwaysThrow(String message, Object... arguments) {
-        throw new CoolException(formatMessage(message, arguments));
+        throw getCoolException(message, arguments);
     }
+
+    private static CoolException getCoolException(String message, Object... arguments) {
+        Optional<Object> first = Arrays.stream(arguments).filter(o -> o instanceof Throwable)
+            .findFirst();
+        return new CoolException(formatMessage(message, arguments), (Throwable) first.orElse(null));
+    }
+
+    private static CoolException getCoolException(String message, int code,  Object... arguments) {
+        Optional<Object> first = Arrays.stream(arguments).filter(o -> o instanceof Throwable)
+            .findFirst();
+        return new CoolException(formatMessage(message, arguments), code, (Throwable) first.orElse(null));
+    }
+
 
     /**
      * 返回data
