@@ -30,6 +30,14 @@ public class AppUserAddressController extends BaseController<UserAddressService,
                         .and(USER_ADDRESS_ENTITY.USER_ID.eq(CoolSecurityUtil.getCurrentUserId()))
                         .orderBy(
                             USER_ADDRESS_ENTITY.IS_DEFAULT.getName(), false)));
+
+        setListOption(
+            createOp()
+                .queryWrapper(
+                    QueryWrapper.create()
+                        .and(USER_ADDRESS_ENTITY.USER_ID.eq(CoolSecurityUtil.getCurrentUserId()))
+                        .orderBy(
+                            USER_ADDRESS_ENTITY.IS_DEFAULT.getName(), false)));
     }
 
     @Operation(summary = "默认地址", description = "默认地址")
