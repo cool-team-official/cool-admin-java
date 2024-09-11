@@ -34,6 +34,7 @@ public class BaseSysDepartmentServiceImpl extends
         list.forEach(baseSysDepartmentEntity -> {
             UpdateChain.of(BaseSysDepartmentEntity.class)
                 .set(BaseSysDepartmentEntity::getOrderNum, baseSysDepartmentEntity.getOrderNum())
+                .set(BaseSysDepartmentEntity::getParentId, baseSysDepartmentEntity.getParentId())
                 .eq(BaseSysDepartmentEntity::getId, baseSysDepartmentEntity.getId()).update();
         });
     }

@@ -132,6 +132,11 @@
             <artifactId>weixin-java-mp</artifactId>
             <version>${weixin-java.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.binarywang</groupId>
+            <artifactId>weixin-java-pay</artifactId>
+            <version>${weixin-java.version}</version>
+        </dependency>
         <!-- 微信相关 end-->
         <dependency>
             <groupId>jakarta.servlet</groupId>

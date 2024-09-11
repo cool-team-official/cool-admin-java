@@ -25,7 +25,7 @@ public class AdminBaseSysRoleController extends BaseController<BaseSysRoleServic
         boolean isAdmin = tokenInfo.getStr("username").equals("admin");
 
         setPageOption(createOp().keyWordLikeFields(BASE_SYS_ROLE_ENTITY.NAME, BASE_SYS_ROLE_ENTITY.LABEL).queryWrapper(QueryWrapper.create().and(qw -> {
-            qw.eq(BASE_SYS_ROLE_ENTITY.USER_ID.getName(), tokenInfo.get("userId")).or(w -> {
+            qw.eq(BASE_SYS_ROLE_ENTITY.USER_ID.getName(), tokenInfo.getLong("userId")).or(w -> {
                 Object o = tokenInfo.get("roleIds");
                 if (o != null) {
                     w.in(BASE_SYS_ROLE_ENTITY.ID.getName(), new JSONArray(o).toList(Long.class));
