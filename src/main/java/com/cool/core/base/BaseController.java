@@ -14,10 +14,8 @@ import com.cool.core.enums.QueryModeEnum;
 import com.cool.core.exception.CoolPreconditions;
 import com.cool.core.request.CrudOption;
 import com.cool.core.request.R;
-import com.cool.core.util.SpringContextUtils;
 import com.mybatisflex.core.paginate.Page;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -27,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,18 +44,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public abstract class BaseController<S extends BaseService<T>, T extends BaseEntity<T>> {
 
     @Getter
+    @Autowired
     protected S service;
     protected Class<T> entityClass;
-
-    @PostConstruct
-    private void init() {
-        if (entityClass == null) {
-            this.entityClass = currentEntityClass();
-        }
-        if (service == null) {
-            this.service = (S) SpringContextUtils.getBean(currentServiceClass());
-        }
-    }
 
     protected final String COOL_PAGE_OP = "COOL_PAGE_OP";
     protected final String COOL_LIST_OP = "COOL_LIST_OP";
@@ -177,9 +167,9 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
         @RequestAttribute(COOL_LIST_OP) CrudOption<T> option) {
         QueryModeEnum queryModeEnum = option.getQueryModeEnum();
         List list = (List) switch (queryModeEnum) {
-            case ENTITY_WITH_RELATIONS -> service.listWithRelations(requestParams, option.getQueryWrapper(entityClass));
-            case CUSTOM -> transformList(service.list(requestParams, option.getQueryWrapper(entityClass), option.getAsType()), option.getAsType());
-            default -> service.list(requestParams, option.getQueryWrapper(entityClass));
+            case ENTITY_WITH_RELATIONS -> service.listWithRelations(requestParams, option.getQueryWrapper(currentEntityClass()));
+            case CUSTOM -> transformList(service.list(requestParams, option.getQueryWrapper(currentEntityClass()), option.getAsType()), option.getAsType());
+            default -> service.list(requestParams, option.getQueryWrapper(currentEntityClass()));
         };
         invokerTransform(option, list);
         return R.ok(list);
@@ -198,9 +188,9 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
         Integer size = requestParams.getInt("size", 20);
         QueryModeEnum queryModeEnum = option.getQueryModeEnum();
         Object obj = switch (queryModeEnum) {
-            case ENTITY_WITH_RELATIONS -> service.pageWithRelations(requestParams, new Page<>(page, size), option.getQueryWrapper(entityClass));
-            case CUSTOM -> transformPage(service.page(requestParams, new Page<>(page, size), option.getQueryWrapper(entityClass), option.getAsType()), option.getAsType());
-            default -> service.page(requestParams, new Page<>(page, size), option.getQueryWrapper(entityClass));
+            case ENTITY_WITH_RELATIONS -> service.pageWithRelations(requestParams, new Page<>(page, size), option.getQueryWrapper(currentEntityClass()));
+            case CUSTOM -> transformPage(service.page(requestParams, new Page<>(page, size), option.getQueryWrapper(currentEntityClass()), option.getAsType()), option.getAsType());
+            default -> service.page(requestParams, new Page<>(page, size), option.getQueryWrapper(currentEntityClass()));
         };
         Page pageResult = (Page) obj;
         invokerTransform(option, pageResult.getRecords());
@@ -239,19 +229,14 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
     }
 
     public Class<T> currentEntityClass() {
+        if (entityClass != null) {
+            return this.entityClass;
+        }
         // 使用  获取泛型参数类型
         Type type = TypeUtil.getTypeArgument(this.getClass(), 1); // 获取第二个泛型参数
         if (type instanceof Class<?>) {
-            return (Class<T>) type;
-        }
-        throw new IllegalStateException("Unable to determine entity class type");
-    }
-
-    public Class<T> currentServiceClass() {
-        // 使用  获取泛型参数类型
-        Type type = TypeUtil.getTypeArgument(this.getClass(), 0); // 获取第一个泛型参数
-        if (type instanceof Class<?>) {
-            return (Class<T>) type;
+            entityClass = (Class<T>) type;
+            return entityClass;
         }
         throw new IllegalStateException("Unable to determine entity class type");
     }
