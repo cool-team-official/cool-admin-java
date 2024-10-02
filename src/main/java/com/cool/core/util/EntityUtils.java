@@ -28,10 +28,10 @@ public class EntityUtils {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         Resource[] resources = null;
         try {
-            resources = resolver.getResources("classpath*:com/cool/modules/**/entity/**/*.class");
+            resources = resolver.getResources("classpath*:com/cool/**/entity/*.class");
             for (Resource r : resources) {
                 String path = r.getURL().getPath();
-                String className = path.substring(path.indexOf("com/cool/modules"),
+                String className = path.substring(path.indexOf("com/cool"),
                     path.lastIndexOf('.')).replace('/', '.');
                 entitySet.add(className);
             }
