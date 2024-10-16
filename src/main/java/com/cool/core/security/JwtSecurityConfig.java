@@ -94,6 +94,10 @@ public class JwtSecurityConfig {
                     for (String path : tokenIgnoreCtr.value()) {
                         ignoredUrlsProperties.getAdminAuthUrls().add(String.join("/", urls) + "/" + path);
                     }
+                    if (tokenIgnoreCtr.value().length == 0) {
+                        // 通配
+                        ignoredUrlsProperties.getAdminAuthUrls().add(String.join("/", urls)+ "/**");
+                    }
                     handlerCtr.add(handlerMethod.getBeanType().getName());
                 });
             }

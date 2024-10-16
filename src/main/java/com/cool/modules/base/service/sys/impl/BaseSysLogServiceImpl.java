@@ -1,7 +1,6 @@
 package com.cool.modules.base.service.sys.impl;
 
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.text.AntPathMatcher;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -10,6 +9,7 @@ import com.cool.core.config.LogProperties;
 import com.cool.core.security.IgnoredUrlsProperties;
 import com.cool.core.util.CoolSecurityUtil;
 import com.cool.core.util.IPUtils;
+import com.cool.core.util.PathUtils;
 import com.cool.modules.base.entity.sys.BaseSysLogEntity;
 import com.cool.modules.base.entity.sys.BaseSysUserEntity;
 import com.cool.modules.base.entity.sys.table.BaseSysLogEntityTableDef;
@@ -42,8 +42,6 @@ public class BaseSysLogServiceImpl extends BaseServiceImpl<BaseSysLogMapper, Bas
 	private final LogProperties logProperties;
 
 	private final Executor logTaskExecutor;
-
-	private static final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
 	@Override
 	public Object page(
@@ -83,8 +81,7 @@ public class BaseSysLogServiceImpl extends BaseServiceImpl<BaseSysLogMapper, Bas
 	}
 
 	private boolean isIgnoreUrl(String requestURI) {
-		return ignoredUrlsProperties.getLogUrls().stream()
-            .anyMatch(url -> antPathMatcher.match(url, requestURI));
+		return PathUtils.isMatch(ignoredUrlsProperties.getLogUrls(), requestURI);
 	}
 
 	public void recordAsync(String ipAddr, String requestURI, JSONObject requestParams) {

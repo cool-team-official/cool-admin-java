@@ -1,12 +1,15 @@
 package com.cool.core.util;
 
 import cn.hutool.core.io.file.PathUtil;
+import cn.hutool.core.text.AntPathMatcher;
 import com.cool.CoolApplication;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class PathUtils {
+    private static final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
     public static boolean isAbsolutePath(String pathStr) {
         Path path = Paths.get(pathStr);
@@ -50,5 +53,18 @@ public class PathUtils {
         if (PathUtil.exists(path, false)) {
             PathUtil.mkParentDirs(path);
         }
+    }
+
+    /**
+     * 判断给定的请求URI是否匹配列表中的任意一个URL模式
+     * 使用Ant风格的路径匹配来处理URL模式，提供了一种通配符匹配的方法
+     *
+     * @param urls 待匹配的URL模式列表
+     * @param requestURI 请求的URI
+     * @return 如果请求URI匹配列表中的任意一个URL模式，则返回true；否则返回false
+     */
+    public static boolean isMatch(List<String> urls, String requestURI) {
+        return urls.stream()
+            .anyMatch(url -> antPathMatcher.match(url, requestURI));
     }
 }

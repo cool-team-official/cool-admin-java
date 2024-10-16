@@ -4,11 +4,11 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.jwt.JWT;
-import com.cool.core.annotation.TokenIgnore;
 import com.cool.core.cache.CoolCache;
 import com.cool.core.enums.UserTypeEnum;
 import com.cool.core.security.jwt.JwtTokenUtil;
 import com.cool.core.security.jwt.JwtUser;
+import com.cool.core.util.PathUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,9 +23,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.servlet.HandlerExecutionChain;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 /**
  * Token过滤器
@@ -37,28 +34,17 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
     final private JwtTokenUtil jwtTokenUtil;
     final private CoolCache coolCache;
-    private final RequestMappingHandlerMapping requestMappingHandlerMapping;
-
+    final private IgnoredUrlsProperties ignoredUrlsProperties;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain chain)
             throws ServletException, IOException {
-        try {
-            HandlerExecutionChain handlerExecutionChain = requestMappingHandlerMapping.getHandler(request);
-            if (handlerExecutionChain != null) {
-                Object handler = handlerExecutionChain.getHandler();
-                if (handler instanceof HandlerMethod) {
-                    HandlerMethod handlerMethod = (HandlerMethod) handler;
-                    if (handlerMethod.getMethodAnnotation(TokenIgnore.class) != null ||
-                            handlerMethod.getBeanType().getAnnotation(TokenIgnore.class) != null) {
-                        chain.doFilter(request, response);
-                        return;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        String requestURI = request.getRequestURI();
+        if (PathUtils.isMatch(ignoredUrlsProperties.getAdminAuthUrls(), requestURI)) {
+            // 请求路径在忽略后台鉴权url里支持通配符，放行
+            chain.doFilter(request, response);
+            return;
         }
         String authToken = request.getHeader("Authorization");
         if (!StrUtil.isEmpty(authToken)) {
