@@ -5,12 +5,20 @@ import cn.hutool.core.lang.Dict;
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ClassUtil;
+import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.cool.core.config.CustomOpenApiResource;
 import com.mybatisflex.annotation.Table;
 import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.util.*;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,13 +29,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 实体信息与路径
@@ -45,7 +46,7 @@ public class CoolEps {
 
     private JSONObject swaggerInfo;
 
-    @Value("${springdoc.api-docs.enabled}")
+    @Value("${springdoc.api-docs.enabled:false}")
     private boolean apiDocsEnabled;
 
     public Dict admin;
@@ -54,11 +55,10 @@ public class CoolEps {
 
     final private RequestMappingHandlerMapping requestMappingHandlerMapping;
 
-    final private CustomOpenApiResource customOpenApiResource;
-
     @Async
     public void init() {
         if (!apiDocsEnabled) {
+            log.info("服务启动成功，端口：{}", serverPort);
             return;
         }
         entityInfo = Dict.create();
@@ -96,7 +96,7 @@ public class CoolEps {
                 String methodPath = getMethodUrl(method);
                 String escapedMethodPath = methodPath.replace("{", "\\{").replace("}", "\\}");
                 String prefix = Objects.requireNonNull(getUrl(info))
-                        .replaceFirst("(?s)(.*)" + escapedMethodPath, "$1");
+                    .replaceFirst("(?s)(.*)" + escapedMethodPath, "$1");
                 Dict result = Dict.create();
                 int type = 0;
                 if (prefix.startsWith("/admin")) {
@@ -114,8 +114,8 @@ public class CoolEps {
                 Dict item = CollUtil.findOne(urls, dict -> {
                     if (dict != null) {
                         return dict.getStr("module").equals(module)
-                                && dict.getStr("controller")
-                                .equals(method.getBeanType().getSimpleName());
+                            && dict.getStr("controller")
+                            .equals(method.getBeanType().getSimpleName());
                     } else {
                         return false;
                     }
@@ -191,7 +191,7 @@ public class CoolEps {
      * @return 方法url地址
      */
     private String getMethodUrl(HandlerMethod handlerMethod) {
-        String url = null;
+        String url = "";
         Method method = handlerMethod.getMethod();
         Annotation[] annotations = method.getDeclaredAnnotations();
 
@@ -199,16 +199,16 @@ public class CoolEps {
             Class<? extends Annotation> annotationType = annotation.annotationType();
             if (annotationType.getName().contains("org.springframework.web.bind.annotation")) {
                 Map<String, Object> attributes = Arrays.stream(annotationType.getDeclaredMethods())
-                        .collect(Collectors.toMap(Method::getName, m -> {
-                            try {
-                                return m.invoke(annotation);
-                            } catch (Exception e) {
-                                throw new IllegalStateException("Failed to access annotation attribute",
-                                        e);
-                            }
-                        }));
+                    .collect(Collectors.toMap(Method::getName, m -> {
+                        try {
+                            return m.invoke(annotation);
+                        } catch (Exception e) {
+                            throw new IllegalStateException("Failed to access annotation attribute",
+                                e);
+                        }
+                    }));
 
-                if (attributes.containsKey("value")) {
+                if (attributes.containsKey("value") && ObjUtil.isNotEmpty(attributes.get("value"))) {
                     url = ((String[]) attributes.get("value"))[0];
                 }
                 break;
@@ -253,7 +253,7 @@ public class CoolEps {
      */
     private JSONObject swaggerInfo() {
         try {
-            byte[] bytes = customOpenApiResource.getOpenApiJson();
+            byte[] bytes = SpringUtil.getBean(CustomOpenApiResource.class).getOpenApiJson();
             return JSONUtil.parseObj(new String(bytes));
         } catch (Exception e) {
             return new JSONObject();
@@ -298,7 +298,7 @@ public class CoolEps {
         for (Field field : fields) {
             Dict dict = Dict.create();
             ColumnDefine columnInfo = AnnotatedElementUtils.findMergedAnnotation(field,
-                    ColumnDefine.class);
+                ColumnDefine.class);
             if (columnInfo == null) {
                 continue;
             }

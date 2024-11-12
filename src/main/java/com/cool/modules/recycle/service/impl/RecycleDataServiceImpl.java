@@ -42,7 +42,7 @@ public class RecycleDataServiceImpl extends BaseServiceImpl<RecycleDataMapper, R
         String keyWord = requestParams.getStr("keyWord");
         if (ObjUtil.isNotEmpty(keyWord)) {
             List<Long> list = baseSysUserService
-                .list(queryWrapper.select(BaseSysUserEntity::getId)
+                .list(QueryWrapper.create().select(BaseSysUserEntity::getId)
                     .like(BaseSysUserEntity::getName, keyWord))
                 .stream().map(BaseSysUserEntity::getId).toList();
             queryWrapper.like(RecycleDataEntity::getUrl, keyWord).or(w -> {
