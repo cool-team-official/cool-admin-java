@@ -166,17 +166,23 @@ public class DynamicJarLoaderService {
     }
 
     /**
-     * 获取插件实例对象
+     * 获取插件实例对象，插件未找到，抛出异常
      */
     public Object getBeanInstance(String key) {
+        Object instance = getInstanceWithoutCheck(key);
+        CoolPreconditions.checkEmpty(instance,"插件 {} 未找到", key);
+        return instance;
+    }
+    /**
+     * 获取插件实例对象,插件未找到，不抛出异常
+     */
+    public Object getInstanceWithoutCheck(String key) {
         CoolPreconditions.checkEmpty(key, "插件key is null");
         if (pluginMap.containsKey(key)) {
             return pluginMap.get(key);
         }
-        CoolPreconditions.alwaysThrow("插件 {} 未找到", key);
         return null;
     }
-
     /**
      * 获取自定义类加载器
      */

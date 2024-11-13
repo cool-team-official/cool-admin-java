@@ -76,10 +76,10 @@ public class UserSmsUtil {
         Map<String, Object> params = new HashMap<>();
         params.put("code", code);
         // 插件key sms-tx、sms-ali，哪个实例存在就调用哪个
-        if (coolPluginService.getInstance("sms-tx") != null) {
+        if (coolPluginService.getInstanceWithoutCheck("sms-tx") != null) {
             // 调用腾讯短信插件
             CoolPluginInvokers.invoke("sms-tx", "send", phones, params);
-        } else if (coolPluginService.getInstance("sms-ali") != null) {
+        } else if (coolPluginService.getInstanceWithoutCheck("sms-ali") != null) {
             // 调用阿里短信插件
             CoolPluginInvokers.invoke("sms-ali", "send", phones, params);
         } else {
