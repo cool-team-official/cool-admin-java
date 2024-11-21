@@ -34,7 +34,7 @@ Ai时代，很多老旧的框架已经无法满足现代化的开发需求，Coo
 - 商城项目：[https://cool-js.com/plugin/140](https://cool-js.com/plugin/140)
 - Ai流程编排+知识库项目：[https://cool-js.com/plugin/118](https://cool-js.com/plugin/118)
 
-tip: 凡购买了【商城项目】和【Ai流程编排+知识库项目】这两个插件的用户，可向cool-admin-java版本开发者提供支付记录，免费获取[cool-admin-java-plus](https://gitee.com/hlc4417/cool-admin-java-plus)版本。
+tip: 凡购买了【商城项目】和【Ai流程编排+知识库项目】这两个Java版本插件的用户，可向cool-admin-java版本开发者提供支付记录，免费获取[cool-admin-java-plus](https://gitee.com/hlc4417/cool-admin-java-plus)版本。
 ## 演示
 
 [https://show.cool-admin.com](https://show.cool-admin.com)
