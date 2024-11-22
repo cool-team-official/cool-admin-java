@@ -5,7 +5,6 @@ import com.cool.core.annotation.CoolRestController;
 import com.cool.core.base.BaseController;
 import com.cool.core.request.R;
 import com.cool.modules.task.entity.TaskInfoEntity;
-import com.cool.modules.task.entity.table.TaskInfoEntityTableDef;
 import com.cool.modules.task.service.TaskInfoService;
 import com.mybatisflex.core.paginate.Page;
 import io.swagger.v3.oas.annotations.Operation;
@@ -56,7 +55,7 @@ public class AdminTaskInfoController extends BaseController<TaskInfoService, Tas
     public R log(@RequestAttribute JSONObject requestParams) {
         Integer page = requestParams.getInt("page", 0);
         Integer size = requestParams.getInt("size", 20);
-        return R.ok(pageResult((Page<TaskInfoEntity>) service.log(new Page<>(page, size), requestParams.getLong("id"),
+        return R.ok(pageResult(service.log(new Page<>(page, size), requestParams.getLong("id"),
                 requestParams.getInt("status"))));
     }
 }

@@ -2,7 +2,7 @@ package com.cool.modules.task.service;
 
 import com.cool.core.base.BaseService;
 import com.cool.modules.task.entity.TaskInfoEntity;
-import com.cool.modules.task.entity.TaskLogEntity;
+import com.cool.modules.task.entity.vo.TaskLogVo;
 import com.mybatisflex.core.paginate.Page;
 
 /**
@@ -36,7 +36,7 @@ public interface TaskInfoService extends BaseService<TaskInfoEntity> {
      * @param status 任务状态
      * @return 日志列表
      */
-    Object log(Page<TaskLogEntity> page, Long taskId, Integer status);
+    Page<TaskLogVo> log(Page<TaskLogVo> page, Long taskId, Integer status);
 
     /**
      * 开始任务
