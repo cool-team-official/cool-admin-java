@@ -68,13 +68,14 @@ public class TaskInfoServiceImpl extends BaseServiceImpl<TaskInfoMapper, TaskInf
     @Override
     public Object log(Page page, Long taskId, Integer status) {
 
-        QueryWrapper queryWrapper = QueryWrapper.create().select(TASK_LOG_ENTITY.ALL_COLUMNS,
-                TASK_INFO_ENTITY.NAME.as("taskName")).from(TASK_LOG_ENTITY)
+        QueryWrapper queryWrapper = QueryWrapper.create().select(TASK_LOG_ENTITY.DETAIL,
+                TASK_LOG_ENTITY.STATUS, TASK_LOG_ENTITY.CREATE_TIME,
+                TASK_INFO_ENTITY.NAME).from(TASK_LOG_ENTITY)
             .leftJoin(TASK_INFO_ENTITY).on(TASK_LOG_ENTITY.TASK_ID.eq(TASK_INFO_ENTITY.ID))
             .eq(TaskLogEntity::getTaskId, taskId, taskId != null)
             .eq(TaskLogEntity::getStatus, status, status != null)
             .orderBy(TaskLogEntity::getCreateTime, false);
-        return mapper.paginate(page, queryWrapper);
+        return mapper.paginateAs(page, queryWrapper, TaskLogEntity.class);
     }
 
     @Override

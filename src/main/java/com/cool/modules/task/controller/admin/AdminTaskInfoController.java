@@ -1,22 +1,20 @@
 package com.cool.modules.task.controller.admin;
 
+import static com.cool.modules.task.entity.table.TaskInfoEntityTableDef.TASK_INFO_ENTITY;
+
 import cn.hutool.json.JSONObject;
 import com.cool.core.annotation.CoolRestController;
 import com.cool.core.base.BaseController;
 import com.cool.core.request.R;
 import com.cool.modules.task.entity.TaskInfoEntity;
-import com.cool.modules.task.entity.table.TaskInfoEntityTableDef;
 import com.cool.modules.task.service.TaskInfoService;
 import com.mybatisflex.core.paginate.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
-
-import jakarta.servlet.http.HttpServletRequest;
-
-import static com.cool.modules.task.entity.table.TaskInfoEntityTableDef.TASK_INFO_ENTITY;
 
 /**
  * 任务
@@ -56,7 +54,7 @@ public class AdminTaskInfoController extends BaseController<TaskInfoService, Tas
     public R log(@RequestAttribute JSONObject requestParams) {
         Integer page = requestParams.getInt("page", 0);
         Integer size = requestParams.getInt("size", 20);
-        return R.ok(pageResult((Page<TaskInfoEntity>) service.log(new Page<>(page, size), requestParams.getLong("id"),
+        return R.ok(pageResult((Page) service.log(new Page<>(page, size), requestParams.getLong("id"),
                 requestParams.getInt("status"))));
     }
 }
