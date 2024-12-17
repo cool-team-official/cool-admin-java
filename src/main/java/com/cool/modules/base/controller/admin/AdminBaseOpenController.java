@@ -1,14 +1,26 @@
 package com.cool.modules.base.controller.admin;
 
+import static com.cool.core.plugin.consts.PluginConsts.captchaHook;
+
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.ObjUtil;
+import cn.hutool.json.JSONObject;
 import com.cool.core.annotation.CoolRestController;
+import com.cool.core.cache.CoolCache;
 import com.cool.core.enums.UserTypeEnum;
 import com.cool.core.eps.CoolEps;
+import com.cool.core.plugin.service.CoolPluginService;
 import com.cool.core.request.R;
+import com.cool.core.util.CoolPluginInvokers;
 import com.cool.modules.base.dto.sys.BaseSysLoginDto;
 import com.cool.modules.base.service.sys.BaseSysLoginService;
+import com.cool.modules.plugin.entity.PluginInfoEntity;
+import io.micrometer.common.util.StringUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,8 +33,9 @@ import org.springframework.web.bind.annotation.*;
 public class AdminBaseOpenController {
 
     final private BaseSysLoginService baseSysLoginService;
-
+    final private CoolPluginService coolPluginService;
     final private CoolEps coolEps;
+    final private CoolCache coolCache;
 
     @Operation(summary = "实体信息与路径", description = "系统所有的实体信息与路径，供前端自动生成代码与服务")
     @GetMapping("/eps")
@@ -54,5 +67,55 @@ public class AdminBaseOpenController {
     @GetMapping("/refreshToken")
     public R refreshToken(String refreshToken) {
         return R.ok(baseSysLoginService.refreshToken(refreshToken));
+    }
+
+    @RequestMapping("/gen")
+    @ResponseBody
+    public Object genCaptcha(@RequestParam(value = "type", required = false)String type) {
+        if (StringUtils.isBlank(type)) {
+            type = "SLIDER";
+        }
+        if ("RANDOM".equals(type)) {
+            int i = ThreadLocalRandom.current().nextInt(0, 4);
+            if (i == 0) {
+                type = "SLIDER";
+            } else if (i == 1) {
+                type = "CONCAT";
+            } else if (i == 2) {
+                type = "ROTATE";
+            } else{
+                type = "WORD_IMAGE_CLICK";
+            }
+
+        }
+        return CoolPluginInvokers.invoke("tianai", "generateCaptcha", type);
+    }
+
+    @PostMapping("/check")
+    @ResponseBody
+    public Object checkCaptcha(@RequestAttribute() JSONObject requestParams) {
+        Object result = CoolPluginInvokers.invoke("tianai", "matching", requestParams);
+        Map<String, Object> map = BeanUtil.beanToMap(result);
+        if (ObjUtil.equals(map.get("code"), 200)) {
+            String code = ThreadLocalRandom.current().nextInt(100000, 999999) + "";
+            coolCache.set("verify:img:" + requestParams.getStr("id"), code, 1800);
+            R r = new R();
+            r.put("data", Map.of("id", requestParams.getStr("id"),
+                "code", code));
+            r.put("code", map.get("code"));
+            return r;
+        }
+        return result;
+    }
+
+    @Operation(summary = "验证码类型")
+    @GetMapping("/captchaMode")
+    public R captchaMode() {
+        PluginInfoEntity pluginInfoEntity = coolPluginService.getPluginInfoEntityByHook(
+            captchaHook);
+        if (pluginInfoEntity != null) {
+            return R.ok(CoolPluginInvokers.invoke(pluginInfoEntity.getKey(), "getMode"));
+        }
+        return R.ok(Map.of("mode", "common"));
     }
 }

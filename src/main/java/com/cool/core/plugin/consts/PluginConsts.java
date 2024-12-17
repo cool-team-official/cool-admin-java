@@ -11,6 +11,11 @@ public interface PluginConsts {
     String uploadHook = "upload";
 
     /**
+     * 验证码hook
+     */
+    String captchaHook = "captcha";
+
+    /**
      * 插件调用入口方法
      */
     String invokePluginMethodName = "invokePlugin";
