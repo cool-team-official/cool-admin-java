@@ -281,10 +281,36 @@ public class CoolEps {
         Set<Class<?>> classes = ClassUtil.scanPackageByAnnotation("", Table.class);
         classes.forEach(e -> {
             // 获得属性
-            Field[] fields = ClassUtil.getDeclaredFields(e);
+            Field[] fields = getAllDeclaredFields(e);
             List<Dict> columns = columns(fields);
             entityInfo.set(e.getSimpleName(), columns);
         });
+    }
+
+    /**
+     * 获取类及其所有父类中声明的字段
+     *
+     * @param clazz 要检查的类
+     * @return 包含类及其所有父类中声明的所有字段的数组
+     */
+    public static Field[] getAllDeclaredFields(Class<?> clazz) {
+        // 参数校验
+        if (clazz == null) {
+            throw new IllegalArgumentException("Class cannot be null");
+        }
+
+        List<Field> allFields = new ArrayList<>();
+        Class<?> currentClass = clazz;
+
+        // 循环遍历类及其父类
+        while (currentClass != null) {
+            Field[] declaredFields = currentClass.getDeclaredFields();
+            allFields.addAll(Arrays.asList(declaredFields));
+            currentClass = currentClass.getSuperclass();
+        }
+
+        // 将列表转换为数组返回
+        return allFields.toArray(new Field[0]);
     }
 
     /**
