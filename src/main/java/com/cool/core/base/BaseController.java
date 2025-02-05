@@ -13,6 +13,7 @@ import cn.hutool.json.JSONUtil;
 import com.cool.core.enums.QueryModeEnum;
 import com.cool.core.exception.CoolPreconditions;
 import com.cool.core.request.CrudOption;
+import com.cool.core.request.PageResult;
 import com.cool.core.request.R;
 import com.mybatisflex.core.paginate.Page;
 import io.swagger.v3.oas.annotations.Operation;
@@ -217,14 +218,14 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
      *
      * @param page 分页返回数据
      */
-    protected Map<String, Object> pageResult(Page page) {
-        Map<String, Object> result = new HashMap<>();
+    protected PageResult pageResult(Page page) {
+        PageResult result = new PageResult();
         Map<String, Object> pagination = new HashMap<>();
         pagination.put("size", page.getPageSize());
         pagination.put("page", page.getPageNumber());
         pagination.put("total", page.getTotalRow());
-        result.put("list", page.getRecords());
-        result.put("pagination", pagination);
+        result.setList(page.getRecords());
+        result.setPagination(pagination);
         return result;
     }
 

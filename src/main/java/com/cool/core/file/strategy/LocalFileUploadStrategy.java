@@ -34,26 +34,23 @@ public class LocalFileUploadStrategy implements FileUploadStrategy {
      */
     @Override
     public Object upload(MultipartFile[] files, HttpServletRequest request,
-                         PluginInfoEntity pluginInfoEntity) {
+        PluginInfoEntity pluginInfoEntity) {
         CoolPreconditions.check(StrUtil.isEmpty(localFileProperties.getBaseUrl()),
-                "filePath 或 baseUrl 未配置");
+            "filePath 或 baseUrl 未配置");
         try {
             List<String> fileUrls = new ArrayList<>();
             String baseUrl = localFileProperties.getBaseUrl();
-            // 绝对路径
-            String filePath = System.getProperty("user.dir");
             String date = DateUtil.format(new Date(),
-                    DatePattern.PURE_DATE_PATTERN);
-            String relativePath =
-                File.separator + localFileProperties.getUploadPath() + File.separator + date;
-
-            FileUtil.mkdir(filePath + relativePath);
+                DatePattern.PURE_DATE_PATTERN);
+            String absoluteUploadFolder = localFileProperties.getAbsoluteUploadFolder();
+            String fullPath = absoluteUploadFolder + File.separator + date;
+            FileUtil.mkdir(fullPath);
             for (MultipartFile file : files) {
                 // 保存文件
                 String fileName = StrUtil.uuid().replaceAll("-", "") + getExtensionName(
-                        Objects.requireNonNull(file.getOriginalFilename()));
-                file.transferTo(new File(filePath + File.separator + relativePath
-                        + File.separator + fileName));
+                    Objects.requireNonNull(file.getOriginalFilename()));
+                file.transferTo(new File(fullPath
+                    + File.separator + fileName));
                 fileUrls.add(baseUrl + File.separator + date + File.separator + fileName);
             }
             if (fileUrls.size() == 1) {

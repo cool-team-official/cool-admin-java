@@ -1,5 +1,7 @@
 package com.cool.core.config;
 
+import com.cool.core.util.PathUtils;
+import java.io.File;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +20,11 @@ public class LocalFileProperties {
     private String uploadPath = "assets/public/upload";
 
     public String getAbsoluteUploadFolder() {
-        return System.getProperty("user.dir") + "/" + uploadPath;
+        if (!PathUtils.isAbsolutePath(uploadPath)) {
+            // 相对路径
+            return System.getProperty("user.dir") + File.separator + uploadPath;
+        }
+        // 绝对路径
+        return uploadPath;
     }
 }
