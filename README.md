@@ -24,7 +24,7 @@ Ai时代，很多老旧的框架已经无法满足现代化的开发需求，Coo
 - **模块化**：代码是模块化的，清晰明了，方便维护
 - **插件化**：插件化的设计，可以通过安装插件的方式扩展如：支付、短信、邮件等功能
 - **自动初始化**：数据自动化，无需再手动维护，启动时自动生成数据库表和表结构数据
-
+- **cool-admin-java-plus**：  [cool-admin-java-plus](https://gitee.com/hlc4417/cool-admin-java-plus)
 ![](https://cool-show.oss-cn-shanghai.aliyuncs.com/admin/flow.png)
 
 ## 地址
@@ -33,8 +33,8 @@ Ai时代，很多老旧的框架已经无法满足现代化的开发需求，Coo
 - 文档：[https://java.cool-admin.com](https://java.cool-admin.com)
 - 商城项目：[https://cool-js.com/plugin/140](https://cool-js.com/plugin/140)
 - Ai流程编排+知识库项目：[https://cool-js.com/plugin/118](https://cool-js.com/plugin/118)
+- cool-admin-java-plus：https://gitee.com/hlc4417/cool-admin-java-plus
 
-tip: 凡购买了【商城项目】和【Ai流程编排+知识库项目】这两个Java版本插件的用户，可向cool-admin-java版本开发者提供支付记录，免费获取[cool-admin-java-plus](https://gitee.com/hlc4417/cool-admin-java-plus)版本。
 ## 演示
 
 [https://show.cool-admin.com](https://show.cool-admin.com)
