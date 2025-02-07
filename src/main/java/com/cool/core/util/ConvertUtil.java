@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -167,21 +169,39 @@ public class ConvertUtil {
         return className.toString();
     }
 
-    /**
-     * CouponInfo 转 coupon/info
-     */
-    public static String classNameToPath(String className) {
-        StringBuilder path = new StringBuilder();
-        for (char c : className.toCharArray()) {
-            if (Character.isUpperCase(c)) {
-                if (!path.isEmpty()) {
-                    path.append("/");
-                }
-                path.append(Character.toLowerCase(c));
-            } else {
-                path.append(c);
+    public static String extractController2Path(String prefix, String className) {
+        // 1. 使用正则匹配 `Controller` 之前的部分
+        Pattern pattern = Pattern.compile("([A-Za-z0-9]+)Controller$");
+        Matcher matcher = pattern.matcher(className);
+
+        if (matcher.find()) {
+            String extracted = matcher.group(1); // 提取 "DemoInfo" 或 "Demo2UserInfo"
+
+            // 2. 计算前缀后缀匹配部分
+            String prefixSuffix = findPrefixSuffixMatch(prefix, extracted);
+            if (!prefixSuffix.isEmpty()) {
+                extracted = extracted.replaceFirst(prefixSuffix, ""); // 去掉匹配部分
             }
+
+            // 3. 处理驼峰命名转换 `/` 分隔符
+            return formatExtractedString(extracted);
         }
-        return path.toString();
+        return "";
+    }
+
+    private static String findPrefixSuffixMatch(String prefix, String extracted) {
+        if (extracted.startsWith(prefix)) {
+            return prefix;
+        }
+        // 从 prefix 中找出类名的前缀部分，例如 AdminDemo -> Demo，AdminDemo2 -> Demo2
+        Pattern pattern = Pattern.compile("[A-Z][a-z0-9]*$");
+        Matcher matcher = pattern.matcher(prefix);
+        return matcher.find() ? matcher.group() : "";
+    }
+
+    private static String formatExtractedString(String extracted) {
+        // 处理驼峰命名转换，DemoDataInfo3 → data/info3
+        extracted = extracted.replaceAll("([a-z])([A-Z])", "$1/$2").toLowerCase();
+        return extracted;
     }
 }

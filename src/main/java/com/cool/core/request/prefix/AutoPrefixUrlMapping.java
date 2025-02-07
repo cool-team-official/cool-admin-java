@@ -77,9 +77,7 @@ public class AutoPrefixUrlMapping extends RequestMappingHandlerMapping {
         String name = handlerType.getName();
         String[] names = name.split("[.]");
         name = names[names.length - 1];
-        cname = name.replace(ConvertUtil.pathToClassName(prefix), "")
-            .replace("Controller", "");
-        return ConvertUtil.classNameToPath(cname);
+        return ConvertUtil.extractController2Path(ConvertUtil.pathToClassName(prefix), name);
     }
 
     /**
