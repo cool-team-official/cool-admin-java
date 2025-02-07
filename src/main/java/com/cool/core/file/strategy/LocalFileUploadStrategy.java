@@ -43,15 +43,15 @@ public class LocalFileUploadStrategy implements FileUploadStrategy {
             String date = DateUtil.format(new Date(),
                 DatePattern.PURE_DATE_PATTERN);
             String absoluteUploadFolder = localFileProperties.getAbsoluteUploadFolder();
-            String fullPath = absoluteUploadFolder + File.separator + date;
+            String fullPath = absoluteUploadFolder + "/" + date;
             FileUtil.mkdir(fullPath);
             for (MultipartFile file : files) {
                 // 保存文件
                 String fileName = StrUtil.uuid().replaceAll("-", "") + getExtensionName(
                     Objects.requireNonNull(file.getOriginalFilename()));
                 file.transferTo(new File(fullPath
-                    + File.separator + fileName));
-                fileUrls.add(baseUrl + File.separator + date + File.separator + fileName);
+                    + "/" + fileName));
+                fileUrls.add(baseUrl + "/" + date + "/" + fileName);
             }
             if (fileUrls.size() == 1) {
                 return fileUrls.get(0);
