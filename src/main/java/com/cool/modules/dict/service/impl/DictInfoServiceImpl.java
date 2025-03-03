@@ -6,6 +6,7 @@ import static com.cool.modules.dict.entity.table.DictTypeEntityTableDef.DICT_TYP
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.Dict;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import com.cool.core.base.BaseServiceImpl;
 import com.cool.modules.dict.entity.DictInfoEntity;
@@ -67,6 +68,29 @@ public class DictInfoServiceImpl extends BaseServiceImpl<DictInfoMapper, DictInf
             result.set(item.getKey(), datas);
         });
         return result;
+    }
+
+    @Override
+    public Object types() {
+        List<DictInfoEntity> infos = this.list();
+        if (ObjUtil.isEmpty(infos)) {
+            return infos;
+        }
+        List<Dict> datas = new ArrayList<>();
+        infos.stream().forEach(d -> {
+            Dict data = Dict.create();
+            data.set("typeId", d.getTypeId());
+            data.set("parentId", d.getParentId());
+            data.set("name", d.getName());
+            data.set("id", d.getId());
+            data.set("value", StrUtil.isEmpty(d.getValue()) ? null : d.getValue());
+            try {
+                data.set("value", Integer.parseInt(d.getValue()));
+            } catch (Exception ignored) {
+            }
+            datas.add(data);
+        });
+        return datas;
     }
 
     @Override

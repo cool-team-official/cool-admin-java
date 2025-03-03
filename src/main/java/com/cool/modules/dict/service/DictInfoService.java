@@ -16,4 +16,6 @@ public interface DictInfoService extends BaseService<DictInfoEntity> {
      * @return
      */
     Object data(List<String> types);
+
+    Object types();
 }

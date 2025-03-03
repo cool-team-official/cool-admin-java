@@ -3,6 +3,7 @@ package com.cool.modules.dict.controller.admin;
 import cn.hutool.core.lang.Dict;
 import cn.hutool.json.JSONObject;
 import com.cool.core.annotation.CoolRestController;
+import com.cool.core.annotation.TokenIgnore;
 import com.cool.core.base.BaseController;
 import com.cool.core.request.R;
 import com.cool.modules.dict.entity.DictInfoEntity;
@@ -12,6 +13,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -32,5 +34,12 @@ public class AdminDictInfoController extends BaseController<DictInfoService, Dic
     @PostMapping("/data")
     public R data(@RequestBody Dict body) {
         return R.ok(this.service.data(body.get("types", null)));
+    }
+
+    @TokenIgnore
+    @GetMapping("/types")
+    @Operation(summary = "获得字典数据", description = "获得字典数据信息")
+    public R types() {
+        return R.ok(this.service.types());
     }
 }
