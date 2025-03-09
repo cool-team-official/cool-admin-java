@@ -1,6 +1,6 @@
 package com.cool.core.util;
 import com.cool.core.exception.CoolPreconditions;
-import com.tangzc.autotable.core.constants.DatabaseDialect;
+import org.dromara.autotable.core.constants.DatabaseDialect;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;

@@ -4,12 +4,12 @@ import com.cool.core.base.BaseEntity;
 import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Table;
 import com.mybatisflex.core.handler.Fastjson2TypeHandler;
-import com.tangzc.autotable.annotation.Index;
-import com.tangzc.autotable.annotation.enums.IndexTypeEnum;
 import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import org.dromara.autotable.annotation.Index;
+import org.dromara.autotable.annotation.enums.IndexTypeEnum;
 
 @Getter
 @Setter

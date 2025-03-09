@@ -12,7 +12,7 @@ import lombok.Setter;
 @Table(value = "leaf_alloc", comment = "唯一id分配")
 public class LeafAllocEntity  extends BaseEntity<LeafAllocEntity> {
 
-    @UniIndex
+    @UniIndex(name = "uk_key")
     @ColumnDefine(comment = "业务key ，比如orderId", length = 20, notNull = true)
     private String key;
 

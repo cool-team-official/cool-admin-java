@@ -1,13 +1,12 @@
 package com.cool.modules.base.entity.sys;
 
 import com.cool.core.base.BaseEntity;
-import com.tangzc.autotable.annotation.enums.IndexTypeEnum;
-
-import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
 import com.mybatisflex.annotation.Table;
-import com.tangzc.autotable.annotation.Index;
+import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
 import lombok.Getter;
 import lombok.Setter;
+import org.dromara.autotable.annotation.Index;
+import org.dromara.autotable.annotation.enums.IndexTypeEnum;
 
 /**
  * 系统配置

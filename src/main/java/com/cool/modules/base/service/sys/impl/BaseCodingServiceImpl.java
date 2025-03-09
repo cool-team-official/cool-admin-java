@@ -4,10 +4,6 @@ import com.cool.core.exception.CoolPreconditions;
 import com.cool.modules.base.dto.sys.CodeContentDto;
 import com.cool.modules.base.service.sys.BaseCodingService;
 import com.google.googlejavaformat.java.Formatter;
-import com.google.googlejavaformat.java.FormatterException;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,6 +12,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 @Service
 public class BaseCodingServiceImpl implements BaseCodingService {
@@ -81,7 +79,7 @@ public class BaseCodingServiceImpl implements BaseCodingService {
     public String formatContent(String content) {
         Formatter formatter = new Formatter();
         try {
-//            return formatter.formatSource(content);
+            return formatter.formatSource(content);
         } catch (Exception ignored) {
         }
         return content;

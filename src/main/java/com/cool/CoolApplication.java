@@ -1,9 +1,9 @@
 package com.cool;
 
 import com.cool.core.util.PathUtils;
-import com.tangzc.autotable.springboot.EnableAutoTable;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.dromara.autotable.springboot.EnableAutoTable;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.SpringApplication;

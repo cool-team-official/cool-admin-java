@@ -1,15 +1,15 @@
 package com.cool.core.autotable;
 
-import com.tangzc.autotable.annotation.ColumnType;
-import com.tangzc.autotable.core.constants.DatabaseDialect;
-import com.tangzc.autotable.core.converter.DatabaseTypeAndLength;
-import com.tangzc.autotable.core.converter.JavaTypeToDatabaseTypeConverter;
-import com.tangzc.autotable.core.strategy.pgsql.data.PgsqlDefaultTypeEnum;
-import com.tangzc.autotable.core.utils.StringUtils;
-import com.tangzc.autotable.core.utils.TableBeanUtils;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
+import org.dromara.autotable.annotation.ColumnType;
+import org.dromara.autotable.core.constants.DatabaseDialect;
+import org.dromara.autotable.core.converter.DatabaseTypeAndLength;
+import org.dromara.autotable.core.converter.JavaTypeToDatabaseTypeConverter;
+import org.dromara.autotable.core.strategy.pgsql.data.PgsqlDefaultTypeEnum;
+import org.dromara.autotable.core.utils.StringUtils;
+import org.dromara.autotable.core.utils.TableBeanUtils;
 import org.springframework.stereotype.Component;
 
 @Component

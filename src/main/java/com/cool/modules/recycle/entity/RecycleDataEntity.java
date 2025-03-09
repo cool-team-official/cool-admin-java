@@ -4,13 +4,13 @@ import com.cool.core.base.BaseEntity;
 import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Table;
 import com.mybatisflex.core.handler.Fastjson2TypeHandler;
-import com.tangzc.autotable.annotation.Ignore;
-import com.tangzc.autotable.annotation.Index;
 import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
 import java.util.List;
 import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
+import org.dromara.autotable.annotation.Ignore;
+import org.dromara.autotable.annotation.Index;
 
 /**
  * 数据回收站 软删除的时候数据会回收到该表

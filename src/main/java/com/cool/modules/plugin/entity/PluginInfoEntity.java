@@ -6,13 +6,13 @@ import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Table;
 import com.mybatisflex.core.handler.Fastjson2TypeHandler;
 import com.mybatisflex.core.handler.JacksonTypeHandler;
-import com.tangzc.autotable.annotation.Ignore;
-import com.tangzc.autotable.annotation.Index;
 import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
 import com.tangzc.mybatisflex.autotable.annotation.UniIndex;
 import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
+import org.dromara.autotable.annotation.Ignore;
+import org.dromara.autotable.annotation.Index;
 
 @Getter
 @Setter

@@ -3,8 +3,8 @@ package com.cool.core.init;
 import com.cool.core.leaf.IDGenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,12 +13,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class IDGenInit implements ApplicationRunner {
+public class IDGenInit {
 
     final private IDGenService idGenService;
 
-    @Override
-    public void run(ApplicationArguments args) {
+    @EventListener(ApplicationReadyEvent.class)
+    public void run() {
         idGenService.init();
     }
 }

@@ -2,10 +2,10 @@ package com.cool.modules.user.entity;
 
 import com.cool.core.base.BaseEntity;
 import com.mybatisflex.annotation.Table;
-import com.tangzc.autotable.annotation.Index;
 import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
 import lombok.Getter;
 import lombok.Setter;
+import org.dromara.autotable.annotation.Index;
 
 /**
  * 用户模块-收货地址

@@ -26,8 +26,8 @@ import com.cool.modules.base.service.sys.BaseSysUserService;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.update.UpdateChain;
-import com.tangzc.autotable.core.constants.DatabaseDialect;
 import lombok.RequiredArgsConstructor;
+import org.dromara.autotable.core.constants.DatabaseDialect;
 import org.springframework.stereotype.Service;
 
 /**

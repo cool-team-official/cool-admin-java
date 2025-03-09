@@ -2,12 +2,11 @@ package com.cool.modules.task.entity;
 
 import com.cool.core.base.BaseEntity;
 import com.mybatisflex.annotation.Column;
-import com.tangzc.autotable.annotation.Index;
-import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
 import com.mybatisflex.annotation.Table;
-
+import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
 import lombok.Getter;
 import lombok.Setter;
+import org.dromara.autotable.annotation.Index;
 
 @Getter
 @Setter

@@ -6,12 +6,12 @@ import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.core.activerecord.Model;
 import com.mybatisflex.core.query.QueryWrapper;
-import com.tangzc.autotable.annotation.Ignore;
 import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
 import java.io.Serializable;
 import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
+import org.dromara.autotable.annotation.Ignore;
 
 /**
  * 基础实体类

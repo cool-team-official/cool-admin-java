@@ -24,9 +24,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class DBFromJsonInit implements ApplicationRunner {
+public class DBFromJsonInit {
 
     final private BaseSysConfService baseSysConfService;
 
@@ -50,8 +50,8 @@ public class DBFromJsonInit implements ApplicationRunner {
     @Value("${cool.initData}")
     private boolean initData;
 
-    @Override
-    public void run(ApplicationArguments args) {
+    @EventListener(ApplicationReadyEvent.class)
+    public void run() {
         if (!initData) {
             return;
         }
