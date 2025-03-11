@@ -170,38 +170,37 @@ public class ConvertUtil {
     }
 
     public static String extractController2Path(String prefix, String className) {
-        // 1. 使用正则匹配 `Controller` 之前的部分
         Pattern pattern = Pattern.compile("([A-Za-z0-9]+)Controller$");
         Matcher matcher = pattern.matcher(className);
 
         if (matcher.find()) {
-            String extracted = matcher.group(1); // 提取 "DemoInfo" 或 "Demo2UserInfo"
+            String extracted = matcher.group(1);
 
-            // 2. 计算前缀后缀匹配部分
-            String prefixSuffix = findPrefixSuffixMatch(prefix, extracted);
-            if (!prefixSuffix.isEmpty()) {
-                extracted = extracted.replaceFirst(prefixSuffix, ""); // 去掉匹配部分
+            // 将前缀拆分为单词数组
+            String[] prefixWords = splitCamelCase(prefix);
+            String[] classWords = splitCamelCase(extracted);
+
+            // 从前缀和类名中逐个匹配并去除匹配的部分
+            int i = 0;
+            for (int j = 0; i < prefixWords.length; j++) {
+                if (j >= classWords.length) {
+                    break;
+                }
+                for (String prefixWord : prefixWords) {
+                    if (prefixWord.equalsIgnoreCase(classWords[i])) {
+                        i++;
+                        break;
+                    }
+                }
             }
-
-            // 3. 处理驼峰命名转换 `/` 分隔符
-            return formatExtractedString(extracted);
+            // 从当前位置开始，拼接剩余部分
+            return String.join("/", java.util.Arrays.copyOfRange(classWords, i, classWords.length)).toLowerCase();
         }
         return "";
     }
 
-    private static String findPrefixSuffixMatch(String prefix, String extracted) {
-        if (extracted.startsWith(prefix)) {
-            return prefix;
-        }
-        // 从 prefix 中找出类名的前缀部分，例如 AdminDemo -> Demo，AdminDemo2 -> Demo2
-        Pattern pattern = Pattern.compile("[A-Z][a-z0-9]*$");
-        Matcher matcher = pattern.matcher(prefix);
-        return matcher.find() ? matcher.group() : "";
-    }
-
-    private static String formatExtractedString(String extracted) {
-        // 处理驼峰命名转换，DemoDataInfo3 → data/info3
-        extracted = extracted.replaceAll("([a-z])([A-Z])", "$1/$2").toLowerCase();
-        return extracted;
+    // 拆分驼峰命名的字符串为单词数组
+    private static String[] splitCamelCase(String input) {
+        return input.split("(?<=.)(?=[A-Z])");
     }
 }
