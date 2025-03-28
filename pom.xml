@@ -29,11 +29,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.google.googlejavaformat</groupId>
-            <artifactId>google-java-format</artifactId>
-            <version>1.15.0</version>
-        </dependency>
         <!-- springframework start -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -3,7 +3,6 @@ package com.cool.modules.base.service.sys.impl;
 import com.cool.core.exception.CoolPreconditions;
 import com.cool.modules.base.dto.sys.CodeContentDto;
 import com.cool.modules.base.service.sys.BaseCodingService;
-import com.google.googlejavaformat.java.Formatter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -12,9 +11,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
+@Slf4j
 @Service
 public class BaseCodingServiceImpl implements BaseCodingService {
 
@@ -54,12 +56,12 @@ public class BaseCodingServiceImpl implements BaseCodingService {
         }
         Path modulesPath = getModulesPath();
         String absolutePathStr = modulesPath.toAbsolutePath().toString();
+        List<String> list = Lists.newArrayList();
         try {
             for (CodeContentDto code : codes) {
                 // 格式化代码内容
-                String formattedContent = formatContent(code.getContent());
-
-                Path filePath = Paths.get(absolutePathStr, code.getPath().replace("src/modules", ""));
+                String formattedContent = code.getContent();
+                Path filePath = Paths.get(absolutePathStr, code.getPath().replace("java/", "/"));
                 Path dirPath = filePath.getParent();
                 // 确保目录存在
                 if (!Files.exists(dirPath)) {
@@ -69,19 +71,11 @@ public class BaseCodingServiceImpl implements BaseCodingService {
                 try (FileWriter writer = new FileWriter(filePath.toFile())) {
                     writer.write(formattedContent);
                 }
+                list.add(filePath.toString());
             }
         } catch (Exception e) {
             CoolPreconditions.alwaysThrow("生成代码失败", e);
         }
-    }
-
-    // 格式化代码内容
-    public String formatContent(String content) {
-        Formatter formatter = new Formatter();
-        try {
-            return formatter.formatSource(content);
-        } catch (Exception ignored) {
-        }
-        return content;
+        log.info("代码已生成，请先编译后，手动重启服务");
     }
 }
