@@ -1,5 +1,6 @@
 package com.cool.core.init;
 
+
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ObjUtil;
@@ -14,6 +15,7 @@ import com.cool.modules.base.entity.sys.BaseSysMenuEntity;
 import com.cool.modules.base.service.sys.BaseSysConfService;
 import com.cool.modules.base.service.sys.BaseSysMenuService;
 import com.mybatisflex.core.BaseMapper;
+import com.mybatisflex.core.query.QueryWrapper;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -204,7 +206,19 @@ public class DBFromJsonInit {
             menuEntity.setParentName(parentMenuEntity.getName());
             menuEntity.setParentId(parentMenuEntity.getId());
         }
-        baseSysMenuService.add(menuEntity);
+        QueryWrapper queryWrapper = QueryWrapper.create()
+            .eq(BaseSysMenuEntity::getName, menuEntity.getName());
+        if (ObjUtil.isNull(menuEntity.getParentId())) {
+            queryWrapper.isNull(BaseSysMenuEntity::getParentId);
+        } else {
+            queryWrapper.eq(BaseSysMenuEntity::getParentId, menuEntity.getParentId());
+        }
+        BaseSysMenuEntity dbBaseSysMenuEntity = baseSysMenuService.getOne(queryWrapper);
+        if (ObjUtil.isNull(dbBaseSysMenuEntity)) {
+            baseSysMenuService.add(menuEntity);
+        } else {
+            menuEntity = dbBaseSysMenuEntity;
+        }
         // 递归处理子菜单
         JSONArray childMenus = jsonObj.getJSONArray("childMenus");
         if (childMenus != null) {

@@ -3,6 +3,7 @@ package com.cool.modules.base.service.sys.impl;
 import com.cool.core.exception.CoolPreconditions;
 import com.cool.modules.base.dto.sys.CodeContentDto;
 import com.cool.modules.base.service.sys.BaseCodingService;
+import com.google.common.collect.Lists;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -11,11 +12,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
 @Slf4j
 @Service
 public class BaseCodingServiceImpl implements BaseCodingService {
@@ -69,6 +69,8 @@ public class BaseCodingServiceImpl implements BaseCodingService {
                 }
                 // 写入文件
                 try (FileWriter writer = new FileWriter(filePath.toFile())) {
+                    formattedContent = formattedContent.replace("com.tangzc.mybatisflex.autotable.annotation.Index;",
+                            "org.dromara.autotable.annotation.Index;");
                     writer.write(formattedContent);
                 }
                 list.add(filePath.toString());

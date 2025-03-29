@@ -1,0 +1,158 @@
+[
+  {
+    "name": "数据管理",
+    "router": null,
+    "perms": null,
+    "type": 0,
+    "icon": "icon-data",
+    "orderNum": 7,
+    "viewPath": null,
+    "keepAlive": true,
+    "isShow": true,
+    "childMenus": [
+      {
+        "name": "字典管理",
+        "router": "/dict/list",
+        "perms": null,
+        "type": 1,
+        "icon": "icon-dict",
+        "orderNum": 3,
+        "viewPath": "modules/dict/views/list.vue",
+        "keepAlive": true,
+        "isShow": true,
+        "childMenus": [
+          {
+            "name": "字典类型",
+            "router": null,
+            "perms": "dict:type:delete,dict:type:update,dict:type:info,dict:type:list,dict:type:page,dict:type:add",
+            "type": 2,
+            "icon": null,
+            "orderNum": 0,
+            "viewPath": null,
+            "keepAlive": true,
+            "isShow": true,
+            "childMenus": [
+            ]
+          }
+        ]
+      }]
+  },
+  {
+    "name": "扩展管理",
+    "router": null,
+    "perms": null,
+    "type": 0,
+    "icon": "icon-favor",
+    "orderNum": 8,
+    "viewPath": null,
+    "keepAlive": true,
+    "isShow": true,
+    "childMenus": [
+      {
+        "tenantId": null,
+        "name": "插件列表",
+        "router": "/helper/plugins",
+        "perms": null,
+        "type": 1,
+        "icon": "icon-list",
+        "orderNum": 1,
+        "viewPath": "modules/helper/views/plugins.vue",
+        "keepAlive": true,
+        "isShow": true,
+        "childMenus": [
+          {
+            "tenantId": null,
+            "name": "删除",
+            "router": null,
+            "perms": "plugin:info:delete",
+            "type": 2,
+            "icon": null,
+            "orderNum": 0,
+            "viewPath": null,
+            "keepAlive": true,
+            "isShow": true,
+            "childMenus": []
+          },
+          {
+            "tenantId": null,
+            "name": "分页查询",
+            "router": null,
+            "perms": "plugin:info:page",
+            "type": 2,
+            "icon": null,
+            "orderNum": 0,
+            "viewPath": null,
+            "keepAlive": true,
+            "isShow": true,
+            "childMenus": []
+          },
+          {
+            "tenantId": null,
+            "name": "单个信息",
+            "router": null,
+            "perms": "plugin:info:info",
+            "type": 2,
+            "icon": null,
+            "orderNum": 0,
+            "viewPath": null,
+            "keepAlive": true,
+            "isShow": true,
+            "childMenus": []
+          },
+          {
+            "tenantId": null,
+            "name": "安装插件",
+            "router": null,
+            "perms": "plugin:info:install",
+            "type": 2,
+            "icon": null,
+            "orderNum": 0,
+            "viewPath": null,
+            "keepAlive": true,
+            "isShow": true,
+            "childMenus": []
+          },
+          {
+            "tenantId": null,
+            "name": "修改",
+            "router": null,
+            "perms": "plugin:info:update",
+            "type": 2,
+            "icon": null,
+            "orderNum": 0,
+            "viewPath": null,
+            "keepAlive": true,
+            "isShow": true,
+            "childMenus": []
+          },
+          {
+            "tenantId": null,
+            "name": "列表查询",
+            "router": null,
+            "perms": "plugin:info:list",
+            "type": 2,
+            "icon": null,
+            "orderNum": 0,
+            "viewPath": null,
+            "keepAlive": true,
+            "isShow": true,
+            "childMenus": []
+          },
+          {
+            "tenantId": null,
+            "name": "新增",
+            "router": null,
+            "perms": "plugin:info:add",
+            "type": 2,
+            "icon": null,
+            "orderNum": 0,
+            "viewPath": null,
+            "keepAlive": true,
+            "isShow": true,
+            "childMenus": []
+          }
+        ]
+      }
+    ]
+  }
+]

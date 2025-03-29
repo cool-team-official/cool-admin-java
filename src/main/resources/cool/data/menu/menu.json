@@ -4,7 +4,7 @@
         "router": "/sys",
         "perms": null,
         "type": 0,
-        "icon": "icon-system",
+        "icon": "icon-set",
         "orderNum": 2,
         "viewPath": null,
         "keepAlive": true,
@@ -807,56 +807,6 @@
                         "childMenus": []
                     }
                 ]
-            }
-        ]
-    },
-    {
-        "name": "扩展管理",
-        "router": null,
-        "perms": null,
-        "type": 0,
-        "icon": "icon-favor",
-        "orderNum": 8,
-        "viewPath": null,
-        "keepAlive": true,
-        "isShow": true,
-        "childMenus": [
-            {
-                "name": "后端插件",
-                "router": "/helper/plugins/serve",
-                "perms": null,
-                "type": 1,
-                "icon": "icon-component",
-                "orderNum": 2,
-                "viewPath": "modules/helper/views/plugins/serve.vue",
-                "keepAlive": true,
-                "isShow": true,
-                "childMenus": [
-                    {
-                        "name": "权限",
-                        "router": null,
-                        "perms": "plugin:info:install,plugin:info:delete,plugin:info:update,plugin:info:page,plugin:info:info",
-                        "type": 2,
-                        "icon": null,
-                        "orderNum": 0,
-                        "viewPath": null,
-                        "keepAlive": true,
-                        "isShow": true,
-                        "childMenus": []
-                    }
-                ]
-            },
-            {
-                "name": "前端插件",
-                "router": "/helper/plugins/vue",
-                "perms": null,
-                "type": 1,
-                "icon": "icon-vue",
-                "orderNum": 1,
-                "viewPath": "modules/helper/views/plugins/vue.vue",
-                "keepAlive": true,
-                "isShow": true,
-                "childMenus": []
             }
         ]
     }
