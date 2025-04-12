@@ -4,7 +4,10 @@ package com.cool.core.plugin.consts;
  * 常量工具
  */
 public interface PluginConsts {
-
+    /**
+     * 国际化插件
+     */
+    String i18n = "i18n";
     /**
      * 上传文件hook
      */

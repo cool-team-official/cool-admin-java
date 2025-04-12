@@ -1,8 +1,8 @@
 package com.cool.modules.base.service.sys;
 
+import cn.hutool.core.lang.Dict;
 import com.cool.modules.base.entity.sys.BaseSysMenuEntity;
 import com.cool.modules.base.entity.sys.BaseSysUserEntity;
-
 import java.util.List;
 
 /**
@@ -117,7 +117,7 @@ public interface BaseSysPermsService {
      * @param adminUserId 登录的用户
      * @return 权限菜单
      */
-    Object permmenu(Long adminUserId);
+    Dict permmenu(Long adminUserId);
 
     /**
      * 更新角色权限

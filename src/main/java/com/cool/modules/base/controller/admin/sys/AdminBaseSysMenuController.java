@@ -4,7 +4,9 @@ import cn.hutool.json.JSONObject;
 import com.cool.core.annotation.CoolRestController;
 import com.cool.core.base.BaseController;
 import com.cool.core.exception.CoolPreconditions;
+import com.cool.core.request.CrudOption;
 import com.cool.core.request.R;
+import com.cool.core.util.I18nUtil;
 import com.cool.modules.base.entity.sys.BaseSysMenuEntity;
 import com.cool.modules.base.service.sys.BaseSysMenuService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +27,14 @@ public class AdminBaseSysMenuController extends
 
     @Override
     protected void init(HttpServletRequest request, JSONObject requestParams) {
+        CrudOption<BaseSysMenuEntity> transform = createOp()
+            .transform(o -> {
+                BaseSysMenuEntity entity = (BaseSysMenuEntity) o;
+                entity.setName(I18nUtil.getI18nMenu(entity.getName()));
+            });
+        setPageOption(transform);
+        setListOption(transform);
+        setInfoOption(transform);
     }
 
     @Operation(summary = "创建代码", description = "创建代码")

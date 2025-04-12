@@ -1,6 +1,7 @@
 package com.cool.core.exception;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.cool.core.util.I18nUtil;
 import java.util.Arrays;
 import java.util.Optional;
 import lombok.Getter;
@@ -69,6 +70,7 @@ public class CoolPreconditions {
     }
 
     private static String formatMessage(String messagePattern, Object... arguments) {
+        messagePattern = I18nUtil.getI18nMsg(messagePattern);
         StringBuilder sb = new StringBuilder();
         int argumentIndex = 0;
         int placeholderIndex = messagePattern.indexOf("{}");

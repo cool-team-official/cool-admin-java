@@ -8,7 +8,11 @@ import cn.hutool.core.lang.Dict;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
+import cn.hutool.json.JSONObject;
 import com.cool.core.base.BaseServiceImpl;
+import com.cool.core.base.ModifyEnum;
+import com.cool.core.i18n.I18nGenerator;
 import com.cool.modules.dict.entity.DictInfoEntity;
 import com.cool.modules.dict.entity.DictTypeEntity;
 import com.cool.modules.dict.mapper.DictInfoMapper;
@@ -119,6 +123,12 @@ public class DictInfoServiceImpl extends BaseServiceImpl<DictInfoMapper, DictInf
             for (Long delId : ids) {
                 this.delDictChild(delId);
             }
+        }
+    }
+    @Override
+    public void modifyAfter(JSONObject requestParams, DictInfoEntity entity, ModifyEnum type) {
+        if (ModifyEnum.ADD.equals(type) || ModifyEnum.UPDATE.equals(type)) {
+            SpringUtil.getBean(I18nGenerator.class).asyncGenBaseDictInfo();
         }
     }
 }

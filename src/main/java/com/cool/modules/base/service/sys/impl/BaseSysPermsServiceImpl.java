@@ -168,7 +168,7 @@ public class BaseSysPermsServiceImpl implements BaseSysPermsService {
     }
 
     @Override
-    public Object permmenu(Long adminUserId) {
+    public Dict permmenu(Long adminUserId) {
         return Dict.create().set("menus", getMenus(adminUserId)).set("perms", getPerms(adminUserId));
     }
 

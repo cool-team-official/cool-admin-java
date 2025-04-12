@@ -5,7 +5,9 @@ import cn.hutool.json.JSONObject;
 import com.cool.core.annotation.CoolRestController;
 import com.cool.core.annotation.TokenIgnore;
 import com.cool.core.base.BaseController;
+import com.cool.core.request.CrudOption;
 import com.cool.core.request.R;
+import com.cool.core.util.I18nUtil;
 import com.cool.modules.dict.entity.DictInfoEntity;
 import com.cool.modules.dict.entity.table.DictInfoEntityTableDef;
 import com.cool.modules.dict.service.DictInfoService;
@@ -26,8 +28,18 @@ public class AdminDictInfoController extends BaseController<DictInfoService, Dic
     @Override
     protected void init(HttpServletRequest request, JSONObject requestParams) {
         setListOption(createOp().fieldEq(DictInfoEntityTableDef.DICT_INFO_ENTITY.TYPE_ID)
-                .keyWordLikeFields(DictInfoEntityTableDef.DICT_INFO_ENTITY.NAME)
-                .queryWrapper(QueryWrapper.create().orderBy(DictInfoEntityTableDef.DICT_INFO_ENTITY.CREATE_TIME, false)));
+            .keyWordLikeFields(DictInfoEntityTableDef.DICT_INFO_ENTITY.NAME)
+            .queryWrapper(QueryWrapper.create().orderBy(DictInfoEntityTableDef.DICT_INFO_ENTITY.CREATE_TIME, false))
+            .transform(o -> {
+                DictInfoEntity entity = (DictInfoEntity) o;
+                entity.setName(I18nUtil.getI18nDictInfo(entity.getName()));
+            }));
+        CrudOption<DictInfoEntity> transform = createOp().transform(o -> {
+            DictInfoEntity entity = (DictInfoEntity) o;
+            entity.setName(I18nUtil.getI18nDictInfo(entity.getName()));
+        });
+        setPageOption(transform);
+        setInfoOption(transform);
     }
 
     @Operation(summary = "获得字典数据", description = "获得字典数据信息")

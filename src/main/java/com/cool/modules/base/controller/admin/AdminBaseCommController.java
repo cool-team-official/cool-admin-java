@@ -6,6 +6,8 @@ import com.cool.core.annotation.TokenIgnore;
 import com.cool.core.eps.CoolEps;
 import com.cool.core.file.FileUploadStrategyFactory;
 import com.cool.core.request.R;
+import com.cool.core.util.I18nUtil;
+import com.cool.modules.base.entity.sys.BaseSysMenuEntity;
 import com.cool.modules.base.entity.sys.BaseSysUserEntity;
 import com.cool.modules.base.service.sys.BaseSysLoginService;
 import com.cool.modules.base.service.sys.BaseSysPermsService;
@@ -14,6 +16,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -67,7 +70,10 @@ public class AdminBaseCommController {
     @Operation(summary = "权限与菜单")
     @GetMapping("/permmenu")
     public R permmenu(@RequestAttribute() Long adminUserId) {
-        return R.ok(baseSysPermsService.permmenu(adminUserId));
+        Dict permmenu = baseSysPermsService.permmenu(adminUserId);
+        List<BaseSysMenuEntity> list = (List<BaseSysMenuEntity>) permmenu.getObj("menus");
+        list.forEach(o -> o.setName(I18nUtil.getI18nMenu(o.getName())));
+        return R.ok(permmenu);
     }
 
     @Operation(summary = "文件上传")

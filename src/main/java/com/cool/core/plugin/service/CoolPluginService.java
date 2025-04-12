@@ -11,6 +11,8 @@ import com.cool.core.config.PluginJson;
 import com.cool.core.exception.CoolException;
 import com.cool.core.exception.CoolPreconditions;
 import com.cool.core.plugin.config.DynamicJarClassLoader;
+import com.cool.core.plugin.event.PluginActionEnum;
+import com.cool.core.plugin.event.PluginEventPublisher;
 import com.cool.core.util.CoolPluginInvokers;
 import com.cool.core.util.MapExtUtil;
 import com.cool.core.util.PathUtils;
@@ -24,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.exceptions.PersistenceException;
@@ -43,14 +46,15 @@ public class CoolPluginService {
 
     final private PluginInfoService pluginInfoService;
 
+    final private PluginEventPublisher pluginEventPublisher;
+
     @Value("${cool.plugin.path}")
     private String pluginPath;
 
     public void init() {
         List<PluginInfoEntity> list = pluginInfoService
             .list(QueryWrapper
-                .create().select(PluginInfoEntity::getId, PluginInfoEntity::getPluginJson,
-                    PluginInfoEntity::getKey, PluginInfoEntity::getName)
+                .create()
                 .eq(PluginInfoEntity::getStatus, 1));
         if (ObjUtil.isEmpty(list)) {
             log.info("没有可初始化的插件");
@@ -77,6 +81,7 @@ public class CoolPluginService {
                 dynamicJarLoaderService.install(pluginJson.getJarPath(), true);
                 // 设置配置
                 CoolPluginInvokers.setPluginJson(entity.getKey(), entity);
+                pluginEventPublisher.publish(entity.getKey(), PluginActionEnum.INSTALL, entity);
             } catch (Exception e) {
                 log.error("初始化{}插件失败", entity.getName(), e);
             } finally {
@@ -100,9 +105,10 @@ public class CoolPluginService {
             PluginJson pluginJson = dynamicJarLoaderService.install(jarFilePath, force);
             key = pluginJson.getKey();
             // 保存插件信息入库
-            savePluginInfo(pluginJson, jarFilePath, jarFile, force);
+            PluginInfoEntity pluginInfoEntity = savePluginInfo(pluginJson, jarFilePath, jarFile, force);
             // 把 ApplicationContext 对象传递打插件类中，使其在插件中也能正常使用spring bean对象
             CoolPluginInvokers.setApplicationContext(pluginJson.getKey());
+            pluginEventPublisher.publish(pluginJson.getKey(), PluginActionEnum.INSTALL, pluginInfoEntity);
         } catch (PersistenceException persistenceException) {
             extractedAfterErr(jarFile, key);
             if (persistenceException.getMessage().contains("Duplicate entry")) {
@@ -165,13 +171,14 @@ public class CoolPluginService {
         boolean flag = pluginInfoEntity.removeById();
         if (flag) {
             FileUtil.del(pluginInfoEntity.getPluginJson().getJarPath());
+            pluginEventPublisher.publish(pluginInfoEntity.getKey(), PluginActionEnum.UNINSTALL, null);
         }
     }
 
     /**
      * 保存插件信息
      */
-    private void savePluginInfo(PluginJson pluginJson, String jarFilePath ,
+    private PluginInfoEntity savePluginInfo(PluginJson pluginJson, String jarFilePath ,
         File jarFile,
         boolean force) {
         CoolPreconditions.checkEmpty(pluginJson, "插件安装失败");
@@ -186,9 +193,11 @@ public class CoolPluginService {
             closeSameNamePlugin(pluginJson);
             // 覆盖插件
             coverPlugin(pluginJson, pluginInfo);
-            return;
+            return pluginInfo;
         }
+        pluginInfo.setStatus(1);
         pluginInfo.save();
+        return pluginInfo;
     }
 
     /**
@@ -201,7 +210,7 @@ public class CoolPluginService {
             String oldJarPath = one.getPluginJson().getJarPath();
             // 重新加载配置不更新
             pluginInfo.setConfig(one.getConfig());
-            pluginInfo.getPluginJson().setConfig(one.getConfig());
+            pluginInfo.getPluginJson().setConfig((Map<String, Object>) one.getConfig());
             // 设置插件配置
             CoolPluginInvokers.setPluginJson(pluginInfo.getKey(), pluginInfo);
             CopyOptions options = CopyOptions.create().setIgnoreNullValue(true);
@@ -274,10 +283,11 @@ public class CoolPluginService {
             entity.getId());
         // 调用插件更新配置标识
         boolean invokePluginConfig = false;
-        if (!MapExtUtil.compareMaps(entity.getConfig(), dbPluginInfoEntity.getConfig())) {
+        if (!MapExtUtil.compareMaps((Map<String, Object>) entity.getConfig(),
+            (Map<String, Object>) dbPluginInfoEntity.getConfig())) {
             // 不一致，说明更新了配置
             entity.setPluginJson(dbPluginInfoEntity.getPluginJson());
-            entity.getPluginJson().setConfig(entity.getConfig());
+            entity.getPluginJson().setConfig((Map<String, Object>) entity.getConfig());
             // 更新了配置， 且插件是开启状态
             invokePluginConfig = ObjUtil.equals(dbPluginInfoEntity.getStatus(), 1);
         }
@@ -290,6 +300,8 @@ public class CoolPluginService {
             CoolPluginInvokers.setPluginJson(dbPluginInfoEntity.getKey(), entity);
         }
         pluginInfoService.update(entity);
+        pluginEventPublisher.publish(dbPluginInfoEntity.getKey(), PluginActionEnum.UPDATE, pluginInfoService.getPluginInfoEntityById(
+            entity.getId()));
     }
 
     /**

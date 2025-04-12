@@ -31,12 +31,14 @@ public class RequestParamsFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
-            throws IOException, ServletException {
+        throws IOException, ServletException {
         // 防止流读取一次后就没有了, 所以需要将流继续写出去
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         JSONObject requestParams = new JSONObject();
+        String language = request.getHeader("language");
         if (StrUtil.isNotEmpty(request.getContentType()) && request.getContentType().contains("multipart/form-data")) {
             servletRequest.setAttribute("requestParams", requestParams);
+            servletRequest.setAttribute("cool-language", language);
             filterChain.doFilter(servletRequest, servletResponse);
         } else {
             BodyReaderHttpServletRequestWrapper requestWrapper = new BodyReaderHttpServletRequestWrapper(request);
@@ -57,7 +59,7 @@ public class RequestParamsFilter implements Filter {
                 requestParams.set("tokenInfo", ((JWT) jwtObj).getPayload().getClaimsJson());
             }
             requestWrapper.setAttribute("requestParams", requestParams);
-
+            requestWrapper.setAttribute("cool-language", language);
             filterChain.doFilter(requestWrapper, servletResponse);
         }
     }

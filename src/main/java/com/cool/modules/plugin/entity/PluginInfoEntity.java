@@ -8,7 +8,6 @@ import com.mybatisflex.core.handler.Fastjson2TypeHandler;
 import com.mybatisflex.core.handler.JacksonTypeHandler;
 import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
 import com.tangzc.mybatisflex.autotable.annotation.UniIndex;
-import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import org.dromara.autotable.annotation.Ignore;
@@ -54,7 +53,7 @@ public class PluginInfoEntity extends BaseEntity<PluginInfoEntity> {
 
     @ColumnDefine(comment = "配置", type = "json")
     @Column(typeHandler = JacksonTypeHandler.class)
-    private Map<String, Object> config;
+    private Object config;
 
     @Ignore
     @Column(ignore = true)

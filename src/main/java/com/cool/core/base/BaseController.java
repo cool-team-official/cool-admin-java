@@ -51,9 +51,11 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
 
     protected final String COOL_PAGE_OP = "COOL_PAGE_OP";
     protected final String COOL_LIST_OP = "COOL_LIST_OP";
+    protected final String COOL_INFO_OP = "COOL_INFO_OP";
 
     private final ThreadLocal<CrudOption<T>> pageOption = new ThreadLocal<>();
     private final ThreadLocal<CrudOption<T>> listOption = new ThreadLocal<>();
+    private final ThreadLocal<CrudOption<T>> infoOption = new ThreadLocal<>();
     private final ThreadLocal<JSONObject> requestParams = new ThreadLocal<>();
 
     @ModelAttribute
@@ -61,16 +63,20 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
         @RequestAttribute JSONObject requestParams) {
         String requestPath = ((ServletRequestAttributes) Objects.requireNonNull(
             RequestContextHolder.getRequestAttributes())).getRequest().getRequestURI();
-        if (!requestPath.endsWith("/page") && !requestPath.endsWith("/list")) {
+        if (!requestPath.endsWith("/page") && !requestPath.endsWith("/list")
+            && !requestPath.endsWith("/info")) {
             // 非page或list不执行
             return;
         }
         this.pageOption.set(new CrudOption<>(requestParams));
         this.listOption.set(new CrudOption<>(requestParams));
+        this.infoOption.set(new CrudOption<>(requestParams));
         this.requestParams.set(requestParams);
         init(request, requestParams);
         request.setAttribute(COOL_PAGE_OP, this.pageOption.get());
         request.setAttribute(COOL_LIST_OP, this.listOption.get());
+        request.setAttribute(COOL_INFO_OP, this.infoOption.get());
+
         removeThreadLocal();
     }
 
@@ -85,6 +91,10 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
 
     public CrudOption<T> createOp() {
         return new CrudOption<>(this.requestParams.get());
+    }
+
+    public void setInfoOption(CrudOption<T> infoOption) {
+        this.infoOption.set(infoOption);
     }
 
     public void setListOption(CrudOption<T> listOption) {
@@ -153,8 +163,11 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
     @Operation(summary = "信息", description = "根据ID查询单个信息")
     @GetMapping("/info")
     protected R<T> info(@RequestAttribute() JSONObject requestParams,
-        @RequestParam() Long id) {
-        return R.ok((T) service.info(requestParams, id));
+        @RequestParam() Long id,
+        @RequestAttribute(COOL_INFO_OP) CrudOption<T> option) {
+        T info = (T) service.info(requestParams, id);
+        invokerTransform(option, info);
+        return R.ok(info);
     }
 
     /**
@@ -219,7 +232,7 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
      * @param page 分页返回数据
      */
     protected PageResult<T> pageResult(Page<T> page) {
-        return PageResult.of( page );
+        return PageResult.of(page);
     }
 
     public Class<T> currentEntityClass() {

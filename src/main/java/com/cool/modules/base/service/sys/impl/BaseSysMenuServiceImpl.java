@@ -3,11 +3,13 @@ package com.cool.modules.base.service.sys.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONObject;
 import com.cool.CoolApplication;
 import com.cool.core.base.BaseServiceImpl;
 import com.cool.core.base.ModifyEnum;
 import com.cool.core.eps.CoolEps;
+import com.cool.core.i18n.I18nGenerator;
 import com.cool.core.util.CompilerUtils;
 import com.cool.core.util.CoolSecurityUtil;
 import com.cool.core.util.PathUtils;
@@ -61,6 +63,9 @@ public class BaseSysMenuServiceImpl extends BaseServiceImpl<BaseSysMenuMapper, B
             for (Long id : ids) {
                 baseSysPermsService.refreshPermsByMenuId(id);
             }
+        }
+        if (ModifyEnum.ADD.equals(type) || ModifyEnum.UPDATE.equals(type)) {
+            SpringUtil.getBean(I18nGenerator.class).asyncGenBaseMenu();
         }
     }
 
@@ -126,6 +131,7 @@ public class BaseSysMenuServiceImpl extends BaseServiceImpl<BaseSysMenuMapper, B
     @Override
     public boolean importMenu(List<BaseSysMenuEntity> menus) {
         menus.forEach(this::importMenu);
+        SpringUtil.getBean(I18nGenerator.class).asyncGenBaseMenu();
         return true;
     }
 
