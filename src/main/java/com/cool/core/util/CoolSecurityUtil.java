@@ -42,6 +42,14 @@ public class CoolSecurityUtil {
         return tokenInfo;
     }
 
+    public static Long getTenantId(JSONObject requestParams) {
+        JSONObject tokenInfo = requestParams.getJSONObject("tokenInfo");
+        if (tokenInfo != null) {
+            return tokenInfo.getLong("tenantId");
+        }
+        return null;
+    }
+
     /**
      * 后台账号退出登录
      *

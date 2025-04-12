@@ -3,7 +3,6 @@ package com.cool.core.util;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import jakarta.annotation.PostConstruct;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
@@ -36,22 +35,10 @@ public class I18nUtil {
 
     private static final Map<String, JSONObject> data = new ConcurrentHashMap<>();
 
-    @PostConstruct
-    public void init() {
-        if (!enable) {
-            return;
-        }
+    private void load(String key, File file) {
         try {
-            // 获取该目录下所有的 .json 文件
-            List<File> jsonFiles = FileUtil.loopFiles(getPath(), file ->
-                file.isFile() && file.getName().endsWith(".json")
-            );
-            jsonFiles.forEach(file -> {
-                String parentName = file.getParentFile().getName();
-                String content = FileUtil.readUtf8String(file);
-                String key = parentName + "_" + file.getName().replace(".json", "");
-                data.put(key, JSONUtil.parseObj(content));
-            });
+            String content = FileUtil.readUtf8String(file);
+            data.put(key, JSONUtil.parseObj(content));
         } catch (Exception e) {
             log.error("读取国际化文件失败", e);
         }
@@ -68,6 +55,8 @@ public class I18nUtil {
             String key = parentName + "_" + file.getName().replace(".json", "");
             if (key.equals(name)) {
                 flag.set(true);
+                // 加载
+                load(key, file);
             }
         });
         return flag.get();

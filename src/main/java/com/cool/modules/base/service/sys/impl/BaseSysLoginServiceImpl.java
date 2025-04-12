@@ -122,6 +122,7 @@ public class BaseSysLoginServiceImpl implements BaseSysLoginService {
 				.set("roleIds", roleIds)
 				.set("username", baseSysUserEntity.getUsername())
 				.set("userId", baseSysUserEntity.getId())
+				.set("tenantId", baseSysUserEntity.getTenantId())
 				.set("passwordVersion", baseSysUserEntity.getPasswordV());
 		String token = jwtTokenUtil.generateToken(tokenInfo);
 		if (StrUtil.isEmpty(refreshToken)) {

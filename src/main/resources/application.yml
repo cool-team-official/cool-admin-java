@@ -148,6 +148,9 @@ cool:
     max-pool-size-multiplier: 3
     # 队列容量的倍数
     queue-capacity-multiplier: 3
+  multi-tenant:
+    # 是否开启多租户，默认关闭
+    enable: false
 # AutoTable配置，根据实体类自动生成表
 auto-table:
   show-banner: false

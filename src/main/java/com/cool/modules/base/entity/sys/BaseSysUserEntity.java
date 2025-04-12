@@ -1,6 +1,6 @@
 package com.cool.modules.base.entity.sys;
 
-import com.cool.core.base.BaseEntity;
+import com.cool.core.base.TenantEntity;
 import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Table;
 import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
@@ -12,7 +12,7 @@ import org.dromara.autotable.annotation.enums.IndexTypeEnum;
 @Getter
 @Setter
 @Table(value = "base_sys_user", comment = "系统用户表")
-public class BaseSysUserEntity extends BaseEntity<BaseSysUserEntity> {
+public class BaseSysUserEntity extends TenantEntity<BaseSysUserEntity> {
     @Index
     @ColumnDefine(comment = "部门ID", type = "bigint")
     private Long departmentId;
