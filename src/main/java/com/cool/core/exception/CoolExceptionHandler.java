@@ -21,10 +21,10 @@ public class CoolExceptionHandler {
     public R handleRRException(CoolException e) {
         R r = new R();
         if (ObjUtil.isNotEmpty(e.getData())) {
-            r.put("data", e.getData());
+            r.setData( e.getData() );
         } else {
-            r.put("code", e.getCode());
-            r.put("message", e.getMessage());
+            r.setCode( e.getCode() );
+            r.setMessage( e.getMessage() );
         }
         if (ObjUtil.isNotEmpty(e.getCause())) {
             log.error(e.getCause().getMessage(), e.getCause());

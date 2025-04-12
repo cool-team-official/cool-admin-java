@@ -152,9 +152,9 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
      */
     @Operation(summary = "信息", description = "根据ID查询单个信息")
     @GetMapping("/info")
-    protected R info(@RequestAttribute() JSONObject requestParams,
+    protected R<T> info(@RequestAttribute() JSONObject requestParams,
         @RequestParam() Long id) {
-        return R.ok(service.info(requestParams, id));
+        return R.ok((T) service.info(requestParams, id));
     }
 
     /**
@@ -164,7 +164,7 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
      */
     @Operation(summary = "查询", description = "查询多个信息")
     @PostMapping("/list")
-    protected R list(@RequestAttribute() JSONObject requestParams,
+    protected R<List<T>> list(@RequestAttribute() JSONObject requestParams,
         @RequestAttribute(COOL_LIST_OP) CrudOption<T> option) {
         QueryModeEnum queryModeEnum = option.getQueryModeEnum();
         List list = (List) switch (queryModeEnum) {
@@ -183,7 +183,7 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
      */
     @Operation(summary = "分页", description = "分页查询多个信息")
     @PostMapping("/page")
-    protected R page(@RequestAttribute() JSONObject requestParams,
+    protected R<PageResult<T>> page(@RequestAttribute() JSONObject requestParams,
         @RequestAttribute(COOL_PAGE_OP) CrudOption<T> option) {
         Integer page = requestParams.getInt("page", 1);
         Integer size = requestParams.getInt("size", 20);
@@ -218,15 +218,8 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
      *
      * @param page 分页返回数据
      */
-    protected PageResult pageResult(Page page) {
-        PageResult result = new PageResult();
-        Map<String, Object> pagination = new HashMap<>();
-        pagination.put("size", page.getPageSize());
-        pagination.put("page", page.getPageNumber());
-        pagination.put("total", page.getTotalRow());
-        result.setList(page.getRecords());
-        result.setPagination(pagination);
-        return result;
+    protected PageResult<T> pageResult(Page<T> page) {
+        return PageResult.of( page );
     }
 
     public Class<T> currentEntityClass() {
