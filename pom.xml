@@ -12,7 +12,7 @@
     </parent>
     <groupId>com.cool</groupId>
     <artifactId>cool-admin</artifactId>
-    <version>7.1.0</version>
+    <version>8.0.0</version>
     <name>cool-admin</name>
     <description>cool admin for java</description>
     <properties>
