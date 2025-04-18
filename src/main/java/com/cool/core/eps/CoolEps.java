@@ -96,15 +96,16 @@ public class CoolEps {
                 String methodPath = getMethodUrl(method);
                 String escapedMethodPath = methodPath.replace("{", "\\{").replace("}", "\\}");
                 String prefix = Objects.requireNonNull(getUrl(info))
-                    .replaceFirst("(?s)(.*)" + escapedMethodPath, "$1");
-                Dict result = Dict.create();
+                        .replaceFirst("(?s)(.*)" + escapedMethodPath, "$1");
+                Dict result;
                 int type = 0;
                 if (prefix.startsWith("/admin")) {
                     result = admin;
-                }
-                if (prefix.startsWith("/app")) {
+                } else if (prefix.startsWith("/app")) {
                     result = app;
                     type = 1;
+                } else {
+                    continue;
                 }
                 if (result.get(module) == null) {
                     result.set(module, new ArrayList<Dict>());
