@@ -44,6 +44,8 @@ public class CoolEps {
     private int serverPort;
 
     private Dict entityInfo;
+    
+    private Dict menuInfo;
 
     private JSONObject swaggerInfo;
 
@@ -63,6 +65,7 @@ public class CoolEps {
             return;
         }
         entityInfo = Dict.create();
+        menuInfo = Dict.create();
         swaggerInfo = swaggerInfo();
         Runnable task = () -> {
             entity();
@@ -132,6 +135,7 @@ public class CoolEps {
                     item.set("api", new ArrayList<Dict>());
                     item.set("prefix", prefix);
                     item.set("columns", entityInfo.get(entityName));
+                    item.set("menu", menuInfo.get( entityName ) );
                     item.set("api", apis(prefix, methodPath, item.getBean("api")));
                     urls.add(item);
                 }
@@ -286,6 +290,13 @@ public class CoolEps {
             Field[] fields = getAllDeclaredFields(e);
             List<Dict> columns = columns(fields);
             entityInfo.set(e.getSimpleName(), columns);
+
+
+            Table mergedAnnotation = AnnotatedElementUtils.findMergedAnnotation(e, Table.class);
+
+            menuInfo.set(e.getSimpleName(), mergedAnnotation.comment());
+
+                    
         });
     }
 
