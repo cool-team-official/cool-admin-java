@@ -10,6 +10,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.cool.core.annotation.EpsField;
 import com.cool.core.config.CustomOpenApiResource;
 import com.mybatisflex.annotation.Table;
 import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
@@ -324,8 +325,13 @@ public class CoolEps {
         List<Dict> dictList = new ArrayList<>();
         for (Field field : fields) {
             Dict dict = Dict.create();
-            ColumnDefine columnInfo = AnnotatedElementUtils.findMergedAnnotation(field,
-                ColumnDefine.class);
+            
+            EpsField epsField = AnnotatedElementUtils.findMergedAnnotation(field, EpsField.class);
+            if (epsField != null) {
+                dict.set("component", epsField.component());
+            }
+            
+            ColumnDefine columnInfo = AnnotatedElementUtils.findMergedAnnotation(field, ColumnDefine.class);
             if (columnInfo == null) {
                 continue;
             }
