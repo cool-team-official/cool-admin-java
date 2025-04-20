@@ -19,12 +19,15 @@
 
 Ai时代，很多老旧的框架已经无法满足现代化的开发需求，Cool-Admin开发了一系列的功能，让开发变得更简单、更快速、更高效。
 
-- **Ai编码**：通过微调大模型学习框架特有写法，实现简单功能从Api接口到前端页面的一键生成
-- **流程编排**：通过拖拽编排方式，即可实现类似像智能客服这样的功能
+- **Ai编码**：通过微调大模型学习框架特有写法，实现简单功能从Api接口到前端页面的一键生成[详情](https://java.cool-admin.com/src/guide/ai.html)
+- **流程编排**：通过拖拽编排方式，即可实现类似像智能客服这样的功能[详情](https://cool-js.com/plugin/118)
+- **多租户**：支持多租户，采用全局动态注入查询条件详情[详情](https://java.cool-admin.com/src/guide/tenant.html)
+- **多语言**：基于大模型自动翻译，无需更改原有代码详情[详情](https://java.cool-admin.com/src/guide/i18n.html)
 - **模块化**：代码是模块化的，清晰明了，方便维护
 - **插件化**：插件化的设计，可以通过安装插件的方式扩展如：支付、短信、邮件等功能
 - **自动初始化**：数据自动化，无需再手动维护，启动时自动生成数据库表和表结构数据
 - **cool-admin-java-plus**：  [cool-admin-java-plus](https://gitee.com/hlc4417/cool-admin-java-plus)
+- ......
 ![](https://cool-show.oss-cn-shanghai.aliyuncs.com/admin/flow.png)
 
 ## 地址
