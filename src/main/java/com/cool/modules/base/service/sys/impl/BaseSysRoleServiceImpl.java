@@ -15,6 +15,8 @@ import com.cool.modules.base.mapper.sys.BaseSysRoleMenuMapper;
 import com.cool.modules.base.service.sys.BaseSysPermsService;
 import com.cool.modules.base.service.sys.BaseSysRoleService;
 import com.mybatisflex.core.query.QueryWrapper;
+
+import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -46,7 +48,7 @@ public class BaseSysRoleServiceImpl extends BaseServiceImpl<BaseSysRoleMapper, B
     }
 
     @Override
-    public Object info(Long id) {
+    public BaseSysRoleEntity info(Long id) {
         BaseSysRoleEntity roleEntity = getById(id);
         Long[] menuIdList = new Long[0];
         Long[] departmentIdList = new Long[0];
@@ -60,8 +62,14 @@ public class BaseSysRoleServiceImpl extends BaseServiceImpl<BaseSysRoleMapper, B
 
             departmentIdList = departmentEntities.stream().map(BaseSysRoleDepartmentEntity::getDepartmentId)
                     .toArray(Long[]::new);
+            
+            
+            roleEntity.setMenuIdList(Arrays.asList( menuIdList ));
+            roleEntity.setDepartmentIdList(Arrays.asList(departmentIdList ));
+            
         }
-        return Dict.parse(roleEntity).set("menuIdList", menuIdList).set("departmentIdList", departmentIdList);
+        
+        return roleEntity;
     }
 
     @Override
