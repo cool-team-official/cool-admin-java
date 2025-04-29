@@ -140,19 +140,32 @@ public class CrudOption<T> {
                 }
             });
         }
-        Object keyWord = requestParams.get("keyWord");
-        if (ObjectUtil.isNotEmpty(this.keyWordLikeFields) && ObjectUtil.isNotEmpty(keyWord)) {
-            // 初始化一个空的 QueryCondition
-            QueryCondition orCondition = null;
-            for (QueryColumn queryColumn : keyWordLikeFields) {
-                QueryCondition condition = queryColumn.like(keyWord);
-                if (orCondition == null) {
-                    orCondition = condition;
-                } else {
-                    orCondition = orCondition.or(condition);
+        if (ObjectUtil.isNotEmpty(this.keyWordLikeFields)) {
+            Object keyWord = requestParams.get("keyWord");
+            if (ObjectUtil.isEmpty(keyWord)) {
+                // // keyWord值为空，遍历keyWordLikeFields字段，根据queryColumn字段名构建查询条件
+                for (QueryColumn queryColumn : keyWordLikeFields) {
+                    String fieldName = queryColumn.getName();
+                    String paramName = StrUtil.toCamelCase(fieldName);
+                    String paramValue = requestParams.getStr(paramName);
+                    if (ObjectUtil.isNotEmpty(paramValue)) {
+                        queryWrapper.and(queryColumn.like(paramValue));
+                    }
                 }
+            } else {
+                // keyWord值非空，使用keyWord构建
+                // 初始化一个空的 QueryCondition
+                QueryCondition orCondition = null;
+                for (QueryColumn queryColumn : keyWordLikeFields) {
+                    QueryCondition condition = queryColumn.like(keyWord);
+                    if (orCondition == null) {
+                        orCondition = condition;
+                    } else {
+                        orCondition = orCondition.or(condition);
+                    }
+                }
+                queryWrapper.and(orCondition);
             }
-            queryWrapper.and(orCondition);
         }
         if (ObjectUtil.isNotEmpty(select)) {
             queryWrapper.select(select);
