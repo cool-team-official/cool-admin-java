@@ -30,6 +30,8 @@ import lombok.RequiredArgsConstructor;
 import org.dromara.autotable.core.constants.DatabaseDialect;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * 系统用户
  */
@@ -171,13 +173,17 @@ public class BaseSysUserServiceImpl extends BaseServiceImpl<BaseSysUserMapper, B
     }
 
     @Override
-    public Object info(Long id) {
+    public BaseSysUserEntity info(Long id) {
         BaseSysUserEntity userEntity = getById(id);
         Long[] roleIdList = baseSysPermsService.getRoles(id);
         BaseSysDepartmentEntity departmentEntity = baseSysDepartmentMapper.selectOneById(
             userEntity.getDepartmentId());
         userEntity.setPassword(null);
-        return Dict.parse(userEntity).set("roleIdList", roleIdList).set("departmentName",
-            departmentEntity != null ? departmentEntity.getName() : null);
+        
+        
+        userEntity.setRoleIdList(List.of(roleIdList));
+        userEntity.setDepartmentName(departmentEntity != null ? departmentEntity.getName() : userEntity.getDepartmentName()  );
+        
+        return userEntity;
     }
 }
