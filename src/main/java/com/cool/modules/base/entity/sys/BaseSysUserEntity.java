@@ -4,10 +4,14 @@ import com.cool.core.base.TenantEntity;
 import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Table;
 import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
+import org.dromara.autotable.annotation.Ignore;
 import org.dromara.autotable.annotation.Index;
 import org.dromara.autotable.annotation.enums.IndexTypeEnum;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -58,4 +62,11 @@ public class BaseSysUserEntity extends TenantEntity<BaseSysUserEntity> {
 
     @ColumnDefine(comment = "socketId")
     private String socketId;
+    
+    
+    @Ignore
+    @Schema( description = "角色列表" )
+    private List<Long> roleIdList;
+
+    
 }

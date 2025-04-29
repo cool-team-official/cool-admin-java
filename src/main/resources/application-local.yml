@@ -30,6 +30,11 @@ springdoc:
   api-docs:
     #是否开启文档功能 本地为了配合eps功能不可关闭
     enabled: true
+  group-configs:
+    - group: app
+      paths-to-match: /app/**
+    - group: admin
+      paths-to-match: /admin/**
 
 # 设置日志级别
 logging:

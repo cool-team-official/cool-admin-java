@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjUtil;
 import com.cool.core.annotation.CoolRestController;
+import com.cool.core.enums.Apis;
 import com.cool.core.util.ConvertUtil;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -43,7 +44,7 @@ public class AutoPrefixUrlMapping extends RequestMappingHandlerMapping {
      * @return 是否需要构建路由
      */
     private boolean checkApis(CoolRestController[] annotations, RequestMappingInfo info) {
-        String[] apis = new String[] { "add", "delete", "update", "page", "list", "info" };
+        String[] apis = Apis.ALL_API;
         if (info.getPathPatternsCondition() == null) {
             return true;
         }
