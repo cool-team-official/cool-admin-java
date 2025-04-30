@@ -1,6 +1,8 @@
 package com.cool.modules.base.entity.sys;
 
+import com.cool.core.annotation.EpsField;
 import com.cool.core.base.TenantEntity;
+import com.cool.core.enums.AdminComponentsEnum;
 import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Table;
 import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
@@ -41,6 +43,7 @@ public class BaseSysUserEntity extends TenantEntity<BaseSysUserEntity> {
     private String headImg;
 
     @ColumnDefine(comment = "手机号")
+    @EpsField(component = AdminComponentsEnum.TEXTAREA)
     private String phone;
 
     @ColumnDefine(comment = "邮箱")

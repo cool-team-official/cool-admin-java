@@ -65,7 +65,7 @@ public class R<T>  implements Serializable {
     }
 
     public static <B> R<B> ok(B data) {
-        return new R<B>(1000 , "ok", data);
+        return new R<B>(1000 , "success", data);
     }
 
 
