@@ -119,7 +119,7 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
         if (JSONUtil.isTypeJSONArray(body)) {
             JSONArray array = JSONUtil.parseArray(body);
             return R.ok(Dict.create()
-                .set("ids", service.addBatch(requestParams, array.toList(currentEntityClass()))));
+                .set("id", service.addBatch(requestParams, array.toList(currentEntityClass()))));
         } else {
             return R.ok(Dict.create().set("id",
                 service.add(requestParams, requestParams.toBean(currentEntityClass()))));

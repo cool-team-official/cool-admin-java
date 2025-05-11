@@ -18,14 +18,14 @@
     <properties>
         <java.version>17</java.version>
         <lombok.version>1.18.34</lombok.version>
-        <mybatis-flex.version>1.10.8</mybatis-flex.version>
-        <mybatis-flex.ext.version>1.10.8.122</mybatis-flex.ext.version>
+        <mybatis-flex.version>1.10.9</mybatis-flex.version>
+        <mybatis-flex.ext.version>1.10.9.125</mybatis-flex.ext.version>
         <hutool.version>5.8.26</hutool.version>
         <ognl.version>3.3.2</ognl.version>
         <fastjson2.version>2.0.51</fastjson2.version>
         <springdoc-openapi.version>2.5.0</springdoc-openapi.version>
         <perf4j.version>0.9.16</perf4j.version>
-        <weixin-java.version>4.6.3.B</weixin-java.version>
+        <weixin-java.version>4.7.0</weixin-java.version>
     </properties>
 
     <dependencies>
@@ -84,7 +84,6 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.zaxxer</groupId>

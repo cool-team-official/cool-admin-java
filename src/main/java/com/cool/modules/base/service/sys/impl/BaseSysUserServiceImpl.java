@@ -27,7 +27,6 @@ import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.update.UpdateChain;
 import lombok.RequiredArgsConstructor;
-import org.dromara.autotable.core.constants.DatabaseDialect;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -55,8 +54,7 @@ public class BaseSysUserServiceImpl extends BaseServiceImpl<BaseSysUserMapper, B
         // 用户的部门权限
         Long[] permsDepartmentArr = coolCache.get("admin:department:" + tokenInfo.get("userId"),
             Long[].class);
-        String databaseDialect = DatabaseDialectUtils.getDatabaseDialect();
-        if (databaseDialect.equals(DatabaseDialect.PostgreSQL)) {
+        if (DatabaseDialectUtils.isPostgresql()) {
             // 兼容postgresql
             qw.select("base_sys_user.id","base_sys_user.create_time","base_sys_user.department_id",
                 "base_sys_user.email","base_sys_user.head_img","base_sys_user.name","base_sys_user.nick_name",
@@ -96,7 +94,7 @@ public class BaseSysUserServiceImpl extends BaseServiceImpl<BaseSysUserMapper, B
             permsDepartmentArr == null || permsDepartmentArr.length == 0 ? new Long[]{null}
                 : permsDepartmentArr,
             !CoolSecurityUtil.getAdminUsername().equals("admin")));
-        if (databaseDialect.equals(DatabaseDialect.PostgreSQL)) {
+        if (DatabaseDialectUtils.isPostgresql()) {
             // 兼容postgresql
             qw.groupBy("base_sys_user.id","base_sys_user.create_time","base_sys_user.department_id",
                 "base_sys_user.email","base_sys_user.head_img","base_sys_user.name","base_sys_user.nick_name",

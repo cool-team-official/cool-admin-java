@@ -3,7 +3,7 @@ package com.cool.modules.recycle.entity;
 import com.cool.core.base.BaseEntity;
 import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Table;
-import com.mybatisflex.core.handler.Fastjson2TypeHandler;
+import com.cool.core.mybatis.handler.Fastjson2TypeHandler;
 import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
 import java.util.List;
 import java.util.Map;

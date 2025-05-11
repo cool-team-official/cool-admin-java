@@ -3,7 +3,7 @@ package com.cool.modules.base.entity.sys;
 import com.cool.core.base.BaseEntity;
 import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Table;
-import com.mybatisflex.core.handler.Fastjson2TypeHandler;
+import com.cool.core.mybatis.handler.Fastjson2TypeHandler;
 import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
 import lombok.Getter;
 import lombok.Setter;

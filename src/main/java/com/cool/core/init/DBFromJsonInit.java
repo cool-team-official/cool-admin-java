@@ -9,6 +9,8 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.cool.core.base.service.MapperProviderService;
+import com.cool.core.mybatis.pg.PostgresSequenceSyncService;
+import com.cool.core.util.DatabaseDialectUtils;
 import com.cool.core.util.EntityUtils;
 import com.cool.modules.base.entity.sys.BaseSysConfEntity;
 import com.cool.modules.base.entity.sys.BaseSysMenuEntity;
@@ -49,6 +51,8 @@ public class DBFromJsonInit {
 
     final private ApplicationEventPublisher eventPublisher;
 
+    final private PostgresSequenceSyncService postgresSequenceSyncService;
+
     @Value("${cool.initData}")
     private boolean initData;
 
@@ -58,12 +62,22 @@ public class DBFromJsonInit {
             return;
         }
         // 初始化自定义的数据
-        extractedDb();
+        boolean initFlag = extractedDb();
         // 初始化菜单数据
-        extractedMenu();
+        initFlag = extractedMenu() || initFlag;
         // 发送数据库初始化完成事件
         eventPublisher.publishEvent(new DbInitCompleteEvent(this));
+        if (initFlag) {
+            // 如果是postgresql，同步序列
+            syncIdentitySequences();
+        }
         log.info("数据初始化完成！");
+    }
+
+    private void syncIdentitySequences() {
+        if (DatabaseDialectUtils.isPostgresql()) {
+            postgresSequenceSyncService.syncIdentitySequences();
+        }
     }
 
     @Getter
@@ -79,21 +93,23 @@ public class DBFromJsonInit {
     /**
      * 解析插入业务数据
      */
-    private void extractedDb() {
+    private boolean extractedDb() {
         try {
             // 加载 JSON 文件
             PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
             Resource[] resources = resolver.getResources("classpath:cool/data/db/*.json");
             // 遍历所有.json文件
-            analysisResources(resources);
+            return analysisResources(resources);
         } catch (Exception e) {
             log.error("Failed to initialize data", e);
         }
+        return false;
     }
 
-    private void analysisResources(Resource[] resources)
+    private boolean analysisResources(Resource[] resources)
         throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         String prefix = "db_";
+        boolean isInit = false;
         for (Resource resource : resources) {
             File resourceFile = new File(resource.getURL().getFile());
             String fileName = prefix + resourceFile.getName();
@@ -112,8 +128,10 @@ public class DBFromJsonInit {
             baseSysUserEntity.setCValue("success");
             // 当前文件已加载
             baseSysConfService.add(baseSysUserEntity);
+            isInit = true;
             log.info("{} 业务数据初始化成功...", fileName);
         }
+        return isInit;
     }
 
     private void analysisJson(JSONObject jsonObject)
@@ -158,7 +176,8 @@ public class DBFromJsonInit {
     /**
      * 解析插入菜单数据
      */
-    public void extractedMenu() {
+    public boolean extractedMenu() {
+        boolean initFlag = false;
         try {
             String prefix = "menu_";
             PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
@@ -173,10 +192,12 @@ public class DBFromJsonInit {
                     continue;
                 }
                 analysisResources(resource, fileName);
+                initFlag = true;
             }
         } catch (Exception e) {
             log.error("Failed to initialize data", e);
         }
+        return initFlag;
     }
 
     private void analysisResources(Resource resource, String fileName) throws IOException {

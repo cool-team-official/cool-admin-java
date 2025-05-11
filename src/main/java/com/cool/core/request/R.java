@@ -4,8 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 返回信息
@@ -24,11 +22,7 @@ public class R<T>  implements Serializable {
 
     @Schema(title = "响应数据")
     private T data;
-    
-    @Schema(title = "响应数据")
-    private Map<String, Object> dataMap = new HashMap<String, Object>();
-    
-    
+
     public R() {
         
     }    
@@ -70,14 +64,10 @@ public class R<T>  implements Serializable {
 
 
     public R<T> put(String key, Object value) {
-        if ( key.equals( "code") ) {
-            this.code = (int)value;
-        } else if ( key.equals( "message") ) {
-            this.message = (String)value;
-        } else if ( key.equals( "data") ) {
-            this.data = (T) value;
-        } else {
-            dataMap.put(key, value);
+        switch (key) {
+            case "code" -> this.code = (int) value;
+            case "message" -> this.message = (String) value;
+            case "data" -> this.data = (T) value;
         }
         return this;
     }

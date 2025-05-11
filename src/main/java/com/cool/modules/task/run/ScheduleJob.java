@@ -4,6 +4,7 @@ import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import com.cool.core.util.AutoTypeConverter;
 import com.cool.modules.task.entity.TaskInfoEntity;
 import com.cool.modules.task.entity.TaskLogEntity;
 import com.cool.modules.task.service.TaskInfoLogService;
@@ -36,7 +37,7 @@ public class ScheduleJob extends QuartzJobBean {
         Scheduler scheduler = SpringUtil.getBean(Scheduler.class);
 
         TaskInfoEntity taskInfoEntity = taskInfoService
-                .getById(context.getJobDetail().getKey().getName().split("_")[1]);
+                .getById(AutoTypeConverter.autoConvert(context.getJobDetail().getKey().getName().split("_")[1]));
         if (ObjUtil.isEmpty(taskInfoEntity)) {
             log.warn("taskInfoEntity is null");
             return;

@@ -12,16 +12,25 @@ import javax.sql.DataSource;
 public class DatabaseDialectUtils {
     private static String dialect;
 
-    public static String getDatabaseDialect() {
+    public static String getDatabaseDialect(DataSource dataSource) {
         if (dialect == null) {
-            dialect = determineDatabaseType();
+            dialect = determineDatabaseType(dataSource);
         }
         return dialect;
     }
 
-    private static String determineDatabaseType() {
-        // 从 DataSource 获取连接
+    public static boolean isPostgresql() {
         DataSource dataSource = SpringContextUtils.getBean(DataSource.class);
+        return DatabaseDialect.PostgreSQL.equals(getDatabaseDialect(dataSource));
+    }
+
+    public static boolean isPostgresql(DataSource dataSource) {
+        return DatabaseDialect.PostgreSQL.equals(getDatabaseDialect(dataSource));
+    }
+
+
+    private static String determineDatabaseType(DataSource dataSource) {
+        // 从 DataSource 获取连接
         try (Connection connection = dataSource.getConnection()) {
             // 获取元数据
             DatabaseMetaData metaData = connection.getMetaData();
