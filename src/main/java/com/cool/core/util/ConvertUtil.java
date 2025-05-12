@@ -1,16 +1,13 @@
 package com.cool.core.util;
 
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+
+import java.io.*;
+import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.web.multipart.MultipartFile;
@@ -202,5 +199,59 @@ public class ConvertUtil {
     // 拆分驼峰命名的字符串为单词数组
     private static String[] splitCamelCase(String input) {
         return input.split("(?<=.)(?=[A-Z])");
+    }
+
+    /**
+     * 将给定的字段值转换为可序列化的形式
+     * 此方法旨在将一个对象的特定字段值转换为其相应的可序列化类型
+     * 它在序列化和反序列化过程中特别有用，确保字段值可以被正确处理
+     *
+     * @param fieldName 字段名称，用于查找字段类型
+     * @param fieldValue 待转换的字段值
+     * @param clazz 包含该字段的类
+     * @return 转换后的可序列化字段值，如果无法确定字段类型，则返回原始值
+     */
+    public static Object convertByClass(String fieldName, Object fieldValue, Class<?> clazz) {
+        // 检查输入参数是否为空，如果字段名或字段值为空，则直接返回字段值
+        if (fieldName == null || fieldValue == null) {
+            return fieldValue;
+        }
+
+        // 获取字段类型
+        Class<?> fieldType = getFieldType(clazz, fieldName);
+        // 如果字段类型为空，则直接返回字段值
+        if (fieldType == null) {
+            return fieldValue;
+        }
+
+        // 使用Convert类的convert方法将字段值转换为字段类型
+        return Convert.convert(fieldType, fieldValue);
+    }
+
+    public static List<Object> covertListByClass(String fieldName, List<Object> fieldValue, Class<?> clazz) {
+        // 检查输入参数是否为空，如果字段名或字段值为空，则直接返回字段值
+        if (fieldName == null || fieldValue == null) {
+            return fieldValue;
+        }
+
+        // 获取字段类型
+        Class<?> fieldType = getFieldType(clazz, fieldName);
+        // 如果字段类型为空，则直接返回字段值
+        if (fieldType == null) {
+            return fieldValue;
+        }
+
+        return Collections.singletonList(Convert.toList(fieldType, fieldValue));
+    }
+    /**
+     * 获取指定类中指定字段的类型
+     *
+     * @param clazz     目标类
+     * @param fieldName 字段名称
+     * @return 字段的类型 Class，如果字段不存在则返回 null
+     */
+    public static Class<?> getFieldType(Class<?> clazz, String fieldName) {
+        Field field = ReflectUtil.getField(clazz, fieldName);
+        return field != null ? field.getType() : null;
     }
 }
