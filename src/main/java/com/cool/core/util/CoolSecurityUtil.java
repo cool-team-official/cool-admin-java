@@ -27,6 +27,12 @@ public class CoolSecurityUtil {
     }
 
     /**
+     * 是否为超级管理员
+     */
+    public static boolean isSuperAdmin() {
+        return "admin".equals(getAdminUsername());
+    }
+    /**
      * 获得jwt中的信息
      *
      * @param requestParams 请求参数

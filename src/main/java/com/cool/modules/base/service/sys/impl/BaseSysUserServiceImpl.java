@@ -6,6 +6,8 @@ import static com.cool.modules.base.entity.sys.table.BaseSysUserEntityTableDef.B
 import static com.cool.modules.base.entity.sys.table.BaseSysUserRoleEntityTableDef.BASE_SYS_USER_ROLE_ENTITY;
 import static com.mybatisflex.core.query.QueryMethods.groupConcat;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.Dict;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
@@ -29,6 +31,7 @@ import com.mybatisflex.core.update.UpdateChain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -50,10 +53,17 @@ public class BaseSysUserServiceImpl extends BaseServiceImpl<BaseSysUserMapper, B
         String keyWord = requestParams.getStr("keyWord");
         Integer status = requestParams.getInt("status");
         Long[] departmentIds = requestParams.get("departmentIds", Long[].class);
-        JSONObject tokenInfo = CoolSecurityUtil.getAdminUserInfo(requestParams);
-        // 用户的部门权限
-        Long[] permsDepartmentArr = coolCache.get("admin:department:" + tokenInfo.get("userId"),
-            Long[].class);
+        CoolPreconditions.checkEmpty(departmentIds);
+        Collection<Long> intersectionDep = Convert.toList(Long.class, departmentIds);
+        if (!CoolSecurityUtil.isSuperAdmin()) {
+            // 用户的部门权限
+            Long[] permsDepartmentArr = baseSysPermsService.getDepartmentIdsByUserId(CoolSecurityUtil.getCurrentUserId());
+            CoolPreconditions.returnNoData(permsDepartmentArr);
+            // 取交集
+            intersectionDep = CollUtil.intersection(Convert.toList(Long.class, departmentIds), Convert.toList(Long.class, permsDepartmentArr));
+            CoolPreconditions.returnNoData(intersectionDep);
+        }
+
         if (DatabaseDialectUtils.isPostgresql()) {
             // 兼容postgresql
             qw.select("base_sys_user.id","base_sys_user.create_time","base_sys_user.department_id",
@@ -79,9 +89,6 @@ public class BaseSysUserServiceImpl extends BaseServiceImpl<BaseSysUserMapper, B
 
         // 不显示admin用户
         qw.and(BASE_SYS_USER_ENTITY.USERNAME.ne("admin"));
-        // 筛选部门
-        qw.and(BASE_SYS_USER_ENTITY.DEPARTMENT_ID.in(departmentIds,
-            ArrayUtil.isNotEmpty(departmentIds)));
         // 筛选状态
         qw.and(BASE_SYS_USER_ENTITY.STATUS.eq(status, status != null));
         // 搜索关键字
@@ -90,10 +97,7 @@ public class BaseSysUserServiceImpl extends BaseServiceImpl<BaseSysUserMapper, B
                 .or(BASE_SYS_USER_ENTITY.USERNAME.like(keyWord)));
         }
         // 过滤部门权限
-        qw.and(BASE_SYS_USER_ENTITY.DEPARTMENT_ID.in(
-            permsDepartmentArr == null || permsDepartmentArr.length == 0 ? new Long[]{null}
-                : permsDepartmentArr,
-            !CoolSecurityUtil.getAdminUsername().equals("admin")));
+        qw.and(BASE_SYS_USER_ENTITY.DEPARTMENT_ID.in(intersectionDep, ArrayUtil.isNotEmpty(intersectionDep)));
         if (DatabaseDialectUtils.isPostgresql()) {
             // 兼容postgresql
             qw.groupBy("base_sys_user.id","base_sys_user.create_time","base_sys_user.department_id",

@@ -1,6 +1,7 @@
 package com.cool.core.exception;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.cool.core.request.R;
 import com.cool.core.util.I18nUtil;
 import java.util.Arrays;
 import java.util.Optional;
@@ -56,6 +57,13 @@ public class CoolPreconditions {
 
     public static void returnData(Object data) {
         returnData(true, data);
+    }
+
+    public static void returnNoData(Object object) {
+        if (ObjectUtil.isEmpty(object)) {
+            R r = R.ok();
+            throw new CoolException(r.getMessage(), r.getCode());
+        }
     }
 
     /**

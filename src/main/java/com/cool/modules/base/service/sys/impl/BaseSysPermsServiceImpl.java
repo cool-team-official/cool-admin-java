@@ -84,6 +84,11 @@ public class BaseSysPermsServiceImpl implements BaseSysPermsService {
     }
 
     @Override
+    public Long[] getDepartmentIdsByUserId(Long userId) {
+        return (Long[]) coolCache.get("admin:department:" + userId);
+    }
+
+    @Override
     public String[] getPermsCache(Long userId) {
         Object result = coolCache.get("admin:perms:" + userId);
         if (ObjectUtil.isNotEmpty(result)) {

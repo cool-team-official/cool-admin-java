@@ -94,6 +94,14 @@ public interface BaseSysPermsService {
      * @param userId 角色ID数组
      * @return 部门ID数组
      */
+    Long[] getDepartmentIdsByUserId(Long userId);
+
+    /**
+     * 根据用户ID获得部门ID
+     *
+     * @param userId 角色ID数组
+     * @return 部门ID数组
+     */
     Long[] getDepartmentIdsByRoleIds(Long userId);
 
     /**
