@@ -4,7 +4,7 @@ import com.cool.core.base.BaseEntity;
 import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Table;
 import com.cool.core.mybatis.handler.Fastjson2TypeHandler;
-import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
+import com.cool.core.annotation.ColumnDefine;
 import java.util.List;
 import java.util.Map;
 import lombok.Getter;

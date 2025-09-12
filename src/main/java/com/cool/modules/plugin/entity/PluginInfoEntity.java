@@ -6,7 +6,7 @@ import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Table;
 import com.cool.core.mybatis.handler.Fastjson2TypeHandler;
 import com.cool.core.mybatis.handler.JacksonTypeHandler;
-import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
+import com.cool.core.annotation.ColumnDefine;
 import com.tangzc.mybatisflex.autotable.annotation.UniIndex;
 import lombok.Getter;
 import lombok.Setter;

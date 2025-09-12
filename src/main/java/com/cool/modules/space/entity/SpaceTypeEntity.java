@@ -2,7 +2,7 @@ package com.cool.modules.space.entity;
 
 import com.cool.core.base.BaseEntity;
 import com.mybatisflex.annotation.Table;
-import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
+import com.cool.core.annotation.ColumnDefine;
 import lombok.Getter;
 import lombok.Setter;
 

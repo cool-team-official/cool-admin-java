@@ -6,7 +6,7 @@ import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.core.activerecord.Model;
 import com.mybatisflex.core.query.QueryWrapper;
-import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
+import com.cool.core.annotation.ColumnDefine;
 import java.io.Serializable;
 import java.util.Date;
 import lombok.Getter;

@@ -14,7 +14,7 @@ import com.cool.core.annotation.EpsField;
 import com.cool.core.annotation.TokenIgnore;
 import com.cool.core.config.CustomOpenApiResource;
 import com.mybatisflex.annotation.Table;
-import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
+import com.cool.core.annotation.ColumnDefine;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

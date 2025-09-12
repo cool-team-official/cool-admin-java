@@ -1,7 +1,7 @@
 package com.cool.core.base;
 
 import com.mybatisflex.core.activerecord.Model;
-import com.tangzc.mybatisflex.autotable.annotation.ColumnDefine;
+import com.cool.core.annotation.ColumnDefine;
 import lombok.Getter;
 import lombok.Setter;
 import org.dromara.autotable.annotation.Index;
