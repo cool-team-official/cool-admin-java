@@ -165,8 +165,9 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
     protected R<T> info(@RequestAttribute() JSONObject requestParams,
         @RequestParam() Long id,
         @RequestAttribute(COOL_INFO_OP) CrudOption<T> option) {
+        invokerTransformParam(option, requestParams);
         T info = (T) service.info(requestParams, id);
-        invokerTransform(option, info);
+        invokerTransformValue(option, info);
         return R.ok(info);
     }
 
@@ -179,13 +180,14 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
     @PostMapping("/list")
     protected R<List<T>> list(@RequestAttribute() JSONObject requestParams,
         @RequestAttribute(COOL_LIST_OP) CrudOption<T> option) {
+        invokerTransformParam(option, requestParams);
         QueryModeEnum queryModeEnum = option.getQueryModeEnum();
         List list = (List) switch (queryModeEnum) {
             case ENTITY_WITH_RELATIONS -> service.listWithRelations(requestParams, option.getQueryWrapper(currentEntityClass()));
             case CUSTOM -> transformList(service.list(requestParams, option.getQueryWrapper(currentEntityClass()), option.getAsType()), option.getAsType());
             default -> service.list(requestParams, option.getQueryWrapper(currentEntityClass()));
         };
-        invokerTransform(option, list);
+        invokerTransformValue(option, list);
         return R.ok(list);
     }
 
@@ -198,6 +200,7 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
     @PostMapping("/page")
     protected R<PageResult<T>> page(@RequestAttribute() JSONObject requestParams,
         @RequestAttribute(COOL_PAGE_OP) CrudOption<T> option) {
+        invokerTransformParam(option, requestParams);
         Integer page = requestParams.getInt("page", 1);
         Integer size = requestParams.getInt("size", 20);
         QueryModeEnum queryModeEnum = option.getQueryModeEnum();
@@ -207,22 +210,31 @@ public abstract class BaseController<S extends BaseService<T>, T extends BaseEnt
             default -> service.page(requestParams, new Page<>(page, size), option.getQueryWrapper(currentEntityClass()));
         };
         Page pageResult = (Page) obj;
-        invokerTransform(option, pageResult.getRecords());
+        invokerTransformValue(option, pageResult.getRecords());
         return R.ok(pageResult(pageResult));
     }
 
     /**
-     * 转换参数，组装数据
+     * 转换值，组装数据
      */
-    private void invokerTransform(CrudOption<T> option, Object obj) {
-        if (ObjUtil.isNotEmpty(option.getTransform())) {
+    private void invokerTransformValue(CrudOption<T> option, Object obj) {
+        if (ObjUtil.isNotNull(option.getTransformValue())) {
             if (obj instanceof List) {
                 ((List)obj).forEach(o -> {
-                    option.getTransform().apply(o);
+                    option.getTransformValue().apply(o);
                 });
             } else {
-                option.getTransform().apply(obj);
+                option.getTransformValue().apply(obj);
             }
+        }
+    }
+
+    /**
+     * 转换入参
+     */
+    private void invokerTransformParam(CrudOption<T> option, JSONObject obj) {
+        if (ObjUtil.isNotNull(option.getTransformParam())) {
+            option.getTransformParam().apply(obj);
         }
     }
 

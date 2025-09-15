@@ -22,11 +22,11 @@ public class AdminDictTypeController extends BaseController<DictTypeService, Dic
     @Override
     protected void init(HttpServletRequest request, JSONObject requestParams) {
         setPageOption(
-            createOp().select(DICT_TYPE_ENTITY.ID, DICT_TYPE_ENTITY.KEY, DICT_TYPE_ENTITY.NAME).transform(o -> {
+            createOp().select(DICT_TYPE_ENTITY.ID, DICT_TYPE_ENTITY.KEY, DICT_TYPE_ENTITY.NAME).transformValue(o -> {
                 DictTypeEntity entity = (DictTypeEntity) o;
                 entity.setName(I18nUtil.getI18nDictType(entity.getName()));
             }));
-        CrudOption<DictTypeEntity> transform = createOp().transform(o -> {
+        CrudOption<DictTypeEntity> transform = createOp().transformValue(o -> {
             DictTypeEntity entity = (DictTypeEntity) o;
             entity.setName(I18nUtil.getI18nDictType(entity.getName()));
         });

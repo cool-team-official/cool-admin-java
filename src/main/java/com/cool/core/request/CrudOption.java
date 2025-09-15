@@ -38,10 +38,16 @@ public class CrudOption<T> {
 
     private QueryModeEnum queryModeEnum;
 
-    private Transform<Object> transform;
+    private TransformValue<Object> transformValue;
 
-    public interface Transform<B> {
+    private TransformParam<Object> transformParam;
+
+    public interface TransformValue<B> {
         void apply(B obj);
+    }
+
+    public interface TransformParam<JSONObject> {
+        void apply(JSONObject obj);
     }
 
     /**
@@ -113,10 +119,27 @@ public class CrudOption<T> {
     }
 
     /**
-     * 转换参数，组装数据
+     * 转换值，组装数据
      */
-    public CrudOption<T> transform(Transform<Object> transform) {
-        this.transform = transform;
+    public CrudOption<T> transformValue(TransformValue<Object> transformValue) {
+        this.transformValue = transformValue;
+        return this;
+    }
+
+    /**
+     * 请使用 transformValue
+     */
+    @Deprecated
+    public CrudOption<T> transform(TransformValue<Object> transformValue) {
+        this.transformValue = transformValue;
+        return this;
+    }
+
+    /**
+     * 转换入参
+     */
+    public CrudOption<T> transformParam(TransformParam<Object> transformParam) {
+        this.transformParam = transformParam;
         return this;
     }
 

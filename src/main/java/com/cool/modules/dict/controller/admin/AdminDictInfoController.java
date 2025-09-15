@@ -30,11 +30,11 @@ public class AdminDictInfoController extends BaseController<DictInfoService, Dic
         setListOption(createOp().fieldEq(DictInfoEntityTableDef.DICT_INFO_ENTITY.TYPE_ID)
             .keyWordLikeFields(DictInfoEntityTableDef.DICT_INFO_ENTITY.NAME)
             .queryWrapper(QueryWrapper.create().orderBy(DictInfoEntityTableDef.DICT_INFO_ENTITY.CREATE_TIME, false))
-            .transform(o -> {
+            .transformValue(o -> {
                 DictInfoEntity entity = (DictInfoEntity) o;
                 entity.setName(I18nUtil.getI18nDictInfo(entity.getName()));
             }));
-        CrudOption<DictInfoEntity> transform = createOp().transform(o -> {
+        CrudOption<DictInfoEntity> transform = createOp().transformValue(o -> {
             DictInfoEntity entity = (DictInfoEntity) o;
             entity.setName(I18nUtil.getI18nDictInfo(entity.getName()));
         });

@@ -28,7 +28,7 @@ public class AdminBaseSysMenuController extends
     @Override
     protected void init(HttpServletRequest request, JSONObject requestParams) {
         CrudOption<BaseSysMenuEntity> transform = createOp()
-            .transform(o -> {
+            .transformValue(o -> {
                 BaseSysMenuEntity entity = (BaseSysMenuEntity) o;
                 entity.setName(I18nUtil.getI18nMenu(entity.getName()));
             });
