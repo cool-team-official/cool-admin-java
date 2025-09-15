@@ -40,7 +40,7 @@ public class CrudOption<T> {
 
     private TransformValue<Object> transformValue;
 
-    private TransformParam<Object> transformParam;
+    private TransformParam<JSONObject> transformParam;
 
     public interface TransformValue<B> {
         void apply(B obj);
@@ -138,7 +138,7 @@ public class CrudOption<T> {
     /**
      * 转换入参
      */
-    public CrudOption<T> transformParam(TransformParam<Object> transformParam) {
+    public CrudOption<T> transformParam(TransformParam<JSONObject> transformParam) {
         this.transformParam = transformParam;
         return this;
     }
